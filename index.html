@@ -177,9 +177,9 @@ body.privacy td:nth-child(12){
 
   /* Header */
   .hdr{flex-direction:column;gap:8px}
-  .hdr-btns{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  .hdr-btns{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
   .hdr-btns .btn,.hdr-btns .btn-out{font-size:10px;padding:6px 4px;text-align:center;width:100%}
-  .hdr-btns .btn-out[title="ตั้งค่า API Key"]{grid-column:1}
+  .hdr-btns .btn{grid-column:1/-1}
   .logo{font-size:16px}
   .status-row{gap:4px}
   .ts{font-size:10px}
@@ -297,7 +297,6 @@ body.privacy td:nth-child(12){
   .kpi-v{font-size:13px}
   .logo{font-size:14px}
   .hdr-btns{grid-template-columns:repeat(3,1fr);gap:3px}
-  .hdr-btns .btn,.hdr-btns .btn-out{font-size:9px;padding:5px 2px}
   .inp-e{width:70px;font-size:11px}
   tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td{font-size:11px}
 }
