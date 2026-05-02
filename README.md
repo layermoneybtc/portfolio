@@ -1,4 +1,4 @@
-# 📊 Portfolio Live v2.1
+# 📊 Portfolio Live v0.01
 
 ระบบติดตามพอร์ตการลงทุน · ราคา Live อัตโนมัติ · ข้อมูลเก็บใน browser คุณเท่านั้น
 
