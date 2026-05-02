@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 Portfolio Live v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--bg4:#1f2433;
+  --border:#ffffff12;--border2:#ffffff22;
+  --text:#e8eaf0;--text2:#8892a4;--text3:#555f72;
+  --up:#34d399;--dn:#f87171;--btc:#F7931A;--warn:#fbbf24;
+  --blue:#60a5fa;--purple:#a78bfa;--pink:#f472b6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px}
+
+/* ── HEADER ── */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.logo{font-size:18px;font-weight:700}.logo span{color:var(--btc)}
+.logo-v{font-size:10px;background:var(--btc);color:#000;padding:1px 5px;border-radius:4px;font-weight:700;margin-left:4px;vertical-align:middle}
+.status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.dot.live{background:var(--up);box-shadow:0 0 6px var(--up);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.ts{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace}
+.cd-wrap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+.cd-bar{width:50px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+.cd-fill{height:100%;background:var(--up);border-radius:2px;transition:width 1s linear}
+.hdr-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--btc);color:#000;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-out{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 12px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-out:hover{border-color:var(--up);color:var(--up)}
+.btn-sm{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:inherit}
+.btn-sm:hover{border-color:var(--up);color:var(--up)}
+.btn-del{background:none;border:1px solid #f8717133;color:var(--dn);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer}
+.btn-buy{background:none;border:1px solid #34d39933;color:var(--up);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer}
+.btn-buy:hover{background:#34d39912}
+.btn-sell{background:none;border:1px solid #f8717133;color:var(--dn);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer}
+.btn-sell:hover{background:#f8717112}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-bottom:16px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.a::before{background:var(--blue)}.kpi.d::before{background:var(--dn)}.kpi.n::before{background:var(--up)}.kpi.c::before{background:var(--btc)}.kpi.s::before{background:var(--warn)}.kpi.p::before{background:var(--purple)}
+.kpi-l{font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.kpi-v{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.kpi-s{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── CHART SECTION ── */
+.chart-grid{display:grid;grid-template-columns:220px 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:640px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px}
+.chart-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.donut-legend{width:100%;display:flex;flex-direction:column;gap:5px}
+.leg-item{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:6px}
+.leg-label{color:var(--text2);display:flex;align-items:center;flex:1}
+.leg-val{color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:10px}
+#pnlCanvas{width:100%;height:140px}
+
+/* ── TABLE ── */
+.err{background:#2d1515;border:1px solid #f8717133;border-radius:10px;padding:10px 14px;font-size:11px;color:var(--dn);margin-bottom:14px;display:none}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg2);color:var(--text3);padding:9px 10px;text-align:right;font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+th:first-child,th:nth-child(2){text-align:left}
+td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);vertical-align:middle;font-family:'IBM Plex Mono',monospace;font-size:12px}
+td:first-child,td:nth-child(2){text-align:left;font-family:'IBM Plex Sans Thai',sans-serif}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.sec-row td{background:var(--bg3);color:var(--text3);font-size:10px;font-family:'IBM Plex Sans Thai',sans-serif;text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;border-top:1px solid var(--border2)}
+.tot-row td{font-weight:600;background:var(--bg2);border-top:1px solid var(--border2)}
+.nw-row td{font-size:13px;font-weight:700;border-top:2px solid var(--border2)}
+.badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.up-b{color:var(--up);background:#34d39918}.dn-b{color:var(--dn);background:#f8717118}
+.sym-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-size:10px;font-weight:700;margin-right:5px}
+.inp-e{background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:3px 6px;font-size:11px;color:var(--warn);font-family:'IBM Plex Mono',monospace;text-align:right;width:100px}
+.inp-e:focus{outline:none;border-color:var(--btc)}
+.hist-btn{font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit;margin-top:2px;display:block}
+.target-chip{font-size:9px;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;cursor:pointer}
+.target-chip.set{color:var(--warn);background:#fbbf2415;border:1px solid #fbbf2430}
+.target-chip.none{color:var(--text3);background:var(--bg3);border:1px solid var(--border)}
+.target-chip.hit-up{color:var(--up);background:#34d39920;border:1px solid #34d39940;animation:flashUp .6s 3}
+.target-chip.hit-dn{color:var(--dn);background:#f8717120;border:1px solid #f8717140;animation:flashDn .6s 3}
+@keyframes flashUp{0%,100%{background:#34d39920}50%{background:#34d39940}}
+@keyframes flashDn{0%,100%{background:#f8717120}50%{background:#f8717140}}
+
+/* ── SAVE STATUS ── */
+.save-toast{position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--up);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--up);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200}
+.save-toast.show{opacity:1}
+
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:#00000090;z-index:100;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:22px;width:min(400px,92vw)}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:3px}
+.msub{font-size:11px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mrow.full{grid-template-columns:1fr}
+.mrow.three{grid-template-columns:1fr 1fr 1fr}
+.mlbl{font-size:11px;color:var(--text3);margin-bottom:4px}
+.minp{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'IBM Plex Mono',monospace}
+.minp:focus{outline:none;border-color:var(--btc)}
+.preview{background:var(--bg3);border-radius:8px;padding:12px;font-size:12px;margin-bottom:14px;min-height:60px;line-height:1.9}
+.mbtn-row{display:flex;gap:8px;justify-content:flex-end}
+.mbtn-c{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+.mbtn-ok{background:var(--up);color:#000;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.mbtn-sell{background:var(--dn);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.tab-row{display:flex;gap:4px;margin-bottom:14px}
+.tab{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px;font-size:11px;color:var(--text3);cursor:pointer;text-align:center;font-family:inherit}
+.tab.active{background:var(--up);color:#000;border-color:var(--up);font-weight:600}
+.tab.active-sell{background:var(--dn);color:#fff;border-color:var(--dn);font-weight:600}
+
+/* ── SELL LOG TABLE ── */
+.sell-log{background:var(--bg3);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.sell-log-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.sell-log table{font-size:11px}
+.sell-log th{font-size:9px;padding:6px 10px}
+.sell-log td{padding:6px 10px;font-size:11px}
+
+footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margin-top:8px}
+
+/* ── SETTINGS MODAL ── */
+.settings-section{margin-bottom:18px}
+.settings-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.key-wrap{display:flex;gap:6px;align-items:center}
+.key-wrap .minp{flex:1;font-size:12px;letter-spacing:1px}
+.key-status{font-size:11px;padding:6px 10px;border-radius:6px;margin-top:6px}
+.key-status.ok{background:#34d39912;color:var(--up);border:1px solid #34d39930}
+.key-status.none{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.key-status.err{background:#f8717112;color:var(--dn);border:1px solid #f8717130}
+.btn-test{background:none;border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:7px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-test:hover{border-color:var(--up);color:var(--up)}
+.btn-clr{background:none;border:1px solid #f8717133;color:var(--dn);border-radius:6px;padding:7px 10px;font-size:11px;cursor:pointer;font-family:inherit}
+.eye-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:12px;cursor:pointer;color:var(--text3)}
+
+/* ── EMOJI PICKER ── */
+.ep{font-size:20px;cursor:pointer;padding:3px;border-radius:6px;transition:background .1s;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px}
+.ep:hover{background:var(--bg4);transform:scale(1.2)}
+.pnl-filter{background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:'IBM Plex Mono',monospace;color:var(--text3);transition:all .15s;white-space:nowrap}
+.pnl-filter:hover{border-color:var(--text2);color:var(--text2)}
+.pnl-filter.active{color:#000;border-color:transparent}
+.exch-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text2);text-align:center;transition:all .15s;line-height:1.4}
+.exch-btn:hover{border-color:var(--blue);color:var(--blue)}
+.exch-btn.active{background:#60a5fa18;border-color:var(--blue);color:var(--blue)}
+</style>
+</head>
+<body>
+
+<!-- Welcome Screen (แสดงครั้งแรก) -->
+<div class="overlay" id="welcomeOverlay" style="z-index:300">
+  <div class="modal" style="width:min(500px,94vw);max-height:90vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:32px;margin-bottom:8px">📊</div>
+      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v2</span></h3>
+      <div style="font-size:12px;color:var(--text3)">ระบบติดตามพอร์ตการลงทุน · ราคา Live อัตโนมัติ</div>
+    </div>
+
+    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12px;line-height:1.8;color:var(--text2)">
+      <div style="font-weight:600;color:var(--up);margin-bottom:6px">✨ ฟีเจอร์หลัก</div>
+      🪙 Crypto — ราคา Live จาก Bitkub ทุก 60 วินาที<br>
+      🇺🇸 หุ้น US — Finnhub Live (ฟรี 60 req/นาที)<br>
+      🇹🇭 หุ้นไทย — Alpha Vantage Live (ฟรี 25 req/วัน)<br>
+      🥇 ทองคำ — 3 แบบ (แท่ง 99.99% / 96.5% / รูปพรรณ)<br>
+      📊 Donut Chart + P&L Chart + Target Alert<br>
+      📤 Export / Import JSON · CSV
+    </div>
+
+    <div style="background:#f8717112;border:1px solid #f8717130;border-radius:10px;padding:14px;margin-bottom:14px;font-size:11px;line-height:1.8;color:var(--text2)">
+      <div style="font-weight:600;color:var(--dn);margin-bottom:6px">🔒 ความเป็นส่วนตัว & ความปลอดภัย</div>
+      ✅ ข้อมูลทั้งหมดเก็บใน <strong>browser ของคุณเท่านั้น</strong> (localStorage)<br>
+      ✅ ไม่มี server เก็บข้อมูล · ไม่มี database · ไม่มีการส่งข้อมูลออก<br>
+      ✅ API Key เก็บในเครื่องคุณ ไม่ฝังในโค้ด<br>
+      ⚠️ ถ้าล้าง browser data ข้อมูลจะหาย → ใช้ <strong>📤 Export</strong> backup เป็นประจำ<br>
+      ⚠️ ไม่ใช่คำแนะนำการลงทุน — ใช้เพื่อติดตามพอร์ตส่วนตัวเท่านั้น
+    </div>
+
+    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;font-size:11px;line-height:1.8;color:var(--text2)">
+      <div style="font-weight:600;color:var(--warn);margin-bottom:6px">🔑 เริ่มต้นใช้งาน (ทำครั้งเดียว)</div>
+      1. กดปุ่ม <strong>⚙️ API Key</strong> ด้านบนขวา<br>
+      2. ใส่ Finnhub Key → สมัครฟรีที่ finnhub.io<br>
+      3. ใส่ Alpha Vantage Key (ถ้ามีหุ้นไทย) → alphavantage.co<br>
+      4. กด 💾 บันทึก → เสร็จ! ราคาจะอัปเดตอัตโนมัติ
+    </div>
+
+    <div class="mbtn-row" style="justify-content:center">
+      <button class="mbtn-ok" onclick="dismissWelcome()" style="padding:10px 32px;font-size:14px">🚀 เริ่มใช้งาน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="save-toast" id="saveToast">💾 บันทึกแล้ว</div>
+
+<!-- Modal: ซื้อ/ขาย -->
+<div class="overlay" id="tradeModal">
+  <div class="modal">
+    <h3 id="mTitle">ซื้อเพิ่ม</h3>
+    <div class="msub" id="mSub"></div>
+    <div class="tab-row">
+      <button class="tab active" id="tabBuy" onclick="switchTab('buy')">🟢 ซื้อเพิ่ม</button>
+      <button class="tab" id="tabSell" onclick="switchTab('sell')">🔴 บันทึกขาย</button>
+    </div>
+    <div id="buyPanel">
+      <div class="mrow">
+        <div><div class="mlbl">จำนวนที่ซื้อเพิ่ม</div><input class="minp" id="mAmt" type="number" step="any" placeholder="0" oninput="updatePreview()"></div>
+        <div><div class="mlbl">ราคาที่ซื้อ (฿/หน่วย)</div><input class="minp" id="mPrice" type="number" step="any" placeholder="0" oninput="updatePreview()"></div>
+      </div>
+      <div class="mrow full"><div><div class="mlbl">วันที่ซื้อ</div><input class="minp" id="mDate" type="date"></div></div>
+      <div class="preview" id="mPreview"><span style="color:var(--text3)">กรอกจำนวนและราคาเพื่อดูผลคำนวณ</span></div>
+      <div class="mbtn-row">
+        <button class="mbtn-c" onclick="closeTrade()">ยกเลิก</button>
+        <button class="mbtn-ok" onclick="confirmBuy()">✓ ยืนยันซื้อ</button>
+      </div>
+    </div>
+    <div id="sellPanel" style="display:none">
+      <div class="mrow">
+        <div><div class="mlbl">จำนวนที่ขาย</div><input class="minp" id="sAmt" type="number" step="any" placeholder="0" oninput="updateSellPreview()"></div>
+        <div><div class="mlbl">ราคาที่ขาย (฿/หน่วย)</div><input class="minp" id="sPrice" type="number" step="any" placeholder="0" oninput="updateSellPreview()"></div>
+      </div>
+      <div class="mrow full"><div><div class="mlbl">วันที่ขาย</div><input class="minp" id="sDate" type="date"></div></div>
+      <div class="preview" id="sPreview"><span style="color:var(--text3)">กรอกจำนวนและราคาเพื่อดูกำไร/ขาดทุน</span></div>
+      <div class="mbtn-row">
+        <button class="mbtn-c" onclick="closeTrade()">ยกเลิก</button>
+        <button class="mbtn-sell" onclick="confirmSell()">✓ ยืนยันขาย</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: เพิ่ม Crypto/หุ้น -->
+<div class="overlay" id="addModal">
+  <div class="modal">
+    <h3 id="amTitle">เพิ่มสินทรัพย์</h3>
+    <div class="msub" id="amSub">กรอกข้อมูลสินทรัพย์ที่ต้องการเพิ่ม</div>
+    <div class="mrow">
+      <div><div class="mlbl">ชื่อ (Symbol)</div><input class="minp" id="amSym" placeholder="เช่น SOL" oninput="amSymHint()"></div>
+      <div><div class="mlbl" id="amBkLbl">Bitkub Symbol</div><input class="minp" id="amBk" placeholder="เช่น THB_SOL"></div>
+    </div>
+    <!-- Exchange selector (แสดงเฉพาะตอนเพิ่มหุ้น) -->
+    <div class="mrow full" id="amExRow" style="display:none">
+      <div>
+        <div class="mlbl">ตลาดหลักทรัพย์</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:2px">
+          <button class="exch-btn active" id="exUS"  onclick="setExchange('US')">🇺🇸 US<br><span style="font-size:9px;opacity:.7">NYSE/NASDAQ</span></button>
+          <button class="exch-btn"        id="exTH"  onclick="setExchange('TH')">🇹🇭 ไทย<br><span style="font-size:9px;opacity:.7">SET/MAI</span></button>
+          <button class="exch-btn"        id="exMANUAL" onclick="setExchange('MANUAL')">✏️ กรอกเอง<br><span style="font-size:9px;opacity:.7">ตลาดอื่นๆ</span></button>
+        </div>
+        <div class="exch-hint" id="amExHint" style="margin-top:6px;font-size:10px;color:var(--text3);background:var(--bg3);border-radius:6px;padding:6px 8px;line-height:1.6"></div>
+      </div>
+    </div>
+    <div class="mrow">
+      <div><div class="mlbl">จำนวนที่มีอยู่</div><input class="minp" id="amAmt" type="number" step="0.00000001" placeholder="เช่น 6.72257" inputmode="decimal"></div>
+      <div><div class="mlbl">ทุนรวม (฿)</div><input class="minp" id="amCost" type="number" step="0.01" placeholder="เช่น 3641.06" inputmode="decimal"></div>
+    </div>
+    <div class="mrow full" id="amPriceRow" style="display:none">
+      <div><div class="mlbl">ราคาปัจจุบัน (฿)</div><input class="minp" id="amPrice" type="number" step="any" placeholder="0"></div>
+    </div>
+    <div class="mbtn-row">
+      <button class="mbtn-c" onclick="closeAdd()">ยกเลิก</button>
+      <button class="mbtn-ok" onclick="confirmAdd()">+ เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: เพิ่มสินทรัพย์อื่นๆ -->
+<div class="overlay" id="otherModal">
+  <div class="modal">
+    <h3>+ เพิ่มสินทรัพย์อื่นๆ</h3>
+    <div class="msub">เช่น หุ้นสหกรณ์ ที่ดิน บ้าน ประกันชีวิต เงินฝากประจำ ฯลฯ</div>
+    <div class="mrow full"><div><div class="mlbl">ชื่อสินทรัพย์</div><input class="minp" id="otName" placeholder="เช่น หุ้นสหกรณ์ / ที่ดิน / บ้าน"></div></div>
+    <div class="mrow">
+      <div><div class="mlbl">มูลค่าตลาด (฿)</div><input class="minp" id="otVal" type="number" step="any" placeholder="0" oninput="otPreview()"></div>
+      <div><div class="mlbl">ต้นทุน/ราคาซื้อ (฿)</div><input class="minp" id="otCost" type="number" step="any" placeholder="0" oninput="otPreview()"></div>
+    </div>
+    <div class="mrow full"><div><div class="mlbl">หนี้ที่ผูกติด (฿) — ถ้าไม่มีใส่ 0</div><input class="minp" id="otDebt" type="number" step="any" placeholder="0" value="0" oninput="otPreview()"></div></div>
+    <div class="mrow">
+      <div>
+        <div class="mlbl">ไอคอน (emoji)</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input class="minp" id="otIcon" placeholder="🏠" value="🏠" style="font-size:20px;width:60px;text-align:center;padding:6px 4px">
+          <button class="btn-sm" onclick="toggleEmojiPicker()" style="padding:6px 10px;font-size:12px">เลือก ▾</button>
+        </div>
+        <!-- Emoji Picker -->
+        <div id="emojiPicker" style="display:none;margin-top:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto">
+          <!-- อสังหาริมทรัพย์ -->
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🏘 อสังหาริมทรัพย์</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <span class="ep" onclick="pickEmoji('🏠')">🏠</span>
+            <span class="ep" onclick="pickEmoji('🏡')">🏡</span>
+            <span class="ep" onclick="pickEmoji('🏢')">🏢</span>
+            <span class="ep" onclick="pickEmoji('🏗️')">🏗️</span>
+            <span class="ep" onclick="pickEmoji('🏪')">🏪</span>
+            <span class="ep" onclick="pickEmoji('🏭')">🏭</span>
+            <span class="ep" onclick="pickEmoji('🏨')">🏨</span>
+            <span class="ep" onclick="pickEmoji('🌍')">🌍</span>
+            <span class="ep" onclick="pickEmoji('🗺️')">🗺️</span>
+            <span class="ep" onclick="pickEmoji('🌾')">🌾</span>
+          </div>
+          <!-- การเงิน / ธนาคาร -->
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💰 การเงิน & การลงทุน</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <span class="ep" onclick="pickEmoji('🏦')">🏦</span>
+            <span class="ep" onclick="pickEmoji('💰')">💰</span>
+            <span class="ep" onclick="pickEmoji('💵')">💵</span>
+            <span class="ep" onclick="pickEmoji('💳')">💳</span>
+            <span class="ep" onclick="pickEmoji('📈')">📈</span>
+            <span class="ep" onclick="pickEmoji('📊')">📊</span>
+            <span class="ep" onclick="pickEmoji('🪙')">🪙</span>
+            <span class="ep" onclick="pickEmoji('💎')">💎</span>
+            <span class="ep" onclick="pickEmoji('🏅')">🏅</span>
+            <span class="ep" onclick="pickEmoji('🎯')">🎯</span>
+          </div>
+          <!-- ยานพาหนะ -->
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🚗 ยานพาหนะ</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <span class="ep" onclick="pickEmoji('🚗')">🚗</span>
+            <span class="ep" onclick="pickEmoji('🚙')">🚙</span>
+            <span class="ep" onclick="pickEmoji('🛻')">🛻</span>
+            <span class="ep" onclick="pickEmoji('🏍️')">🏍️</span>
+            <span class="ep" onclick="pickEmoji('🚐')">🚐</span>
+            <span class="ep" onclick="pickEmoji('✈️')">✈️</span>
+            <span class="ep" onclick="pickEmoji('🚢')">🚢</span>
+            <span class="ep" onclick="pickEmoji('🛥️')">🛥️</span>
+          </div>
+          <!-- ประกัน / สวัสดิการ -->
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🛡 ประกัน & สวัสดิการ</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <span class="ep" onclick="pickEmoji('🛡️')">🛡️</span>
+            <span class="ep" onclick="pickEmoji('📋')">📋</span>
+            <span class="ep" onclick="pickEmoji('📄')">📄</span>
+            <span class="ep" onclick="pickEmoji('🏥')">🏥</span>
+            <span class="ep" onclick="pickEmoji('👨‍👩‍👧')">👨‍👩‍👧</span>
+            <span class="ep" onclick="pickEmoji('🎓')">🎓</span>
+            <span class="ep" onclick="pickEmoji('🌿')">🌿</span>
+          </div>
+          <!-- ของสะสม / อื่นๆ -->
+          <div style="font-size:9px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🎨 ของสะสม & อื่นๆ</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <span class="ep" onclick="pickEmoji('🎨')">🎨</span>
+            <span class="ep" onclick="pickEmoji('🖼️')">🖼️</span>
+            <span class="ep" onclick="pickEmoji('⌚')">⌚</span>
+            <span class="ep" onclick="pickEmoji('💍')">💍</span>
+            <span class="ep" onclick="pickEmoji('👜')">👜</span>
+            <span class="ep" onclick="pickEmoji('📱')">📱</span>
+            <span class="ep" onclick="pickEmoji('💻')">💻</span>
+            <span class="ep" onclick="pickEmoji('🎮')">🎮</span>
+            <span class="ep" onclick="pickEmoji('📦')">📦</span>
+            <span class="ep" onclick="pickEmoji('🔑')">🔑</span>
+          </div>
+        </div>
+      </div>
+      <div><div class="mlbl">สี</div>
+        <select class="minp" id="otColor">
+          <option value="#34d399">เขียว</option><option value="#60a5fa">ฟ้า</option>
+          <option value="#fbbf24">เหลือง</option><option value="#f472b6">ชมพู</option>
+          <option value="#a78bfa">ม่วง</option><option value="#fb923c">ส้ม</option>
+          <option value="#f87171">แดง</option><option value="#e8eaf0">ขาว</option>
+        </select>
+      </div>
+    </div>
+    <div class="preview" id="otPreviewBox"><span style="color:var(--text3)">กรอกข้อมูลเพื่อดูตัวอย่าง</span></div>
+    <div class="mbtn-row">
+      <button class="mbtn-c" onclick="closeOther()">ยกเลิก</button>
+      <button class="mbtn-ok" onclick="confirmOther()">+ เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Target Price -->
+<div class="overlay" id="targetModal">
+  <div class="modal">
+    <h3 id="tmTitle">🎯 ตั้งเป้าราคา</h3>
+    <div class="msub" id="tmSub"></div>
+    <div class="mrow">
+      <div>
+        <div class="mlbl">🟢 Take Profit (฿)</div>
+        <input class="minp" id="tmTP" type="number" step="any" placeholder="ราคาเป้า">
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">เมื่อราคาถึงหรือสูงกว่า</div>
+      </div>
+      <div>
+        <div class="mlbl">🔴 Stop Loss (฿)</div>
+        <input class="minp" id="tmSL" type="number" step="any" placeholder="ราคาตัดขาดทุน">
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">เมื่อราคาต่ำกว่าหรือเท่ากับ</div>
+      </div>
+    </div>
+    <div class="mbtn-row">
+      <button class="mbtn-c" onclick="clearTarget()">ล้างเป้า</button>
+      <button class="mbtn-c" onclick="closeTarget()">ยกเลิก</button>
+      <button class="mbtn-ok" onclick="confirmTarget()">✓ บันทึกเป้า</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ประวัติการซื้อ -->
+<div class="overlay" id="histModal">
+  <div class="modal" style="width:min(520px,96vw);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <h3 id="histTitle">ประวัติการซื้อ</h3>
+      <button onclick="closeHist()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div class="msub">แก้ไขตัวเลขในช่องได้เลย · กด ✕ เพื่อลบรายการ · จำนวนและทุนรวมอัปเดตอัตโนมัติ</div>
+    <div id="histBody"></div>
+    <div class="mbtn-row" style="margin-top:4px">
+      <button class="mbtn-ok" onclick="closeHist()">เสร็จสิ้น</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: เพิ่มทองคำ -->
+<div class="overlay" id="goldModal">
+  <div class="modal" style="width:min(440px,94vw)">
+    <h3>🥇 เพิ่มทองคำ</h3>
+    <div class="msub">ราคา Live จาก Finnhub · XAU/USD × THB อัตโนมัติ</div>
+
+    <!-- ประเภท -->
+    <div style="margin-bottom:12px">
+      <div class="mlbl" style="margin-bottom:6px">ประเภททอง</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <button class="exch-btn active" id="gt9999" onclick="setGoldType('9999')">
+          🟡 ทองแท่ง<br><span style="font-size:9px;opacity:.8">99.99% (สากล)</span>
+        </button>
+        <button class="exch-btn" id="gt965" onclick="setGoldType('965')">
+          🟠 ทองแท่ง<br><span style="font-size:9px;opacity:.8">96.5% (ไทย)</span>
+        </button>
+        <button class="exch-btn" id="gtjewel" onclick="setGoldType('jewel')">
+          💍 รูปพรรณ<br><span style="font-size:9px;opacity:.8">96.5% + กำเหน็จ</span>
+        </button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);background:var(--bg3);border-radius:6px;padding:7px 10px;margin-top:7px;line-height:1.7" id="gdTypeHint"></div>
+    </div>
+
+    <div class="mrow">
+      <div>
+        <div class="mlbl">น้ำหนัก (บาทไทย)</div>
+        <input class="minp" id="gdAmt" type="number" step="0.001" placeholder="1.0" oninput="goldPreview()">
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">1 บาท = 15.244g = 0.4901 oz</div>
+      </div>
+      <div>
+        <div class="mlbl">ราคาที่ซื้อ (฿/บาทไทย)</div>
+        <input class="minp" id="gdBuyPrice" type="number" step="1" placeholder="0" oninput="goldPreview()">
+        <div style="font-size:10px;color:var(--up);margin-top:3px" id="gdCurHint">ราคาตลาด: กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- ค่ากำเหน็จ (แสดงเฉพาะรูปพรรณ) -->
+    <div class="mrow full" id="gdMakingRow" style="display:none">
+      <div>
+        <div class="mlbl">ค่ากำเหน็จที่จ่าย (฿/บาทไทย)</div>
+        <input class="minp" id="gdMaking" type="number" step="50" placeholder="เช่น 800" oninput="goldPreview()">
+        <div style="font-size:10px;color:var(--warn);margin-top:3px">⚠️ ตอนขายจะได้แค่ราคา 96.5% — ค่ากำเหน็จไม่คืน</div>
+      </div>
+    </div>
+
+    <div class="mrow full">
+      <div>
+        <div class="mlbl">ชื่อ / หมายเหตุ</div>
+        <input class="minp" id="gdName" placeholder="เช่น ทองแท่ง 1 บาท / สร้อยคอ 2 บาท">
+      </div>
+    </div>
+    <div class="mrow full">
+      <div><div class="mlbl">วันที่ซื้อ</div><input class="minp" id="gdDate" type="date"></div>
+    </div>
+    <div class="preview" id="gdPreview"><span style="color:var(--text3)">กรอกข้อมูลเพื่อดูผลคำนวณ</span></div>
+    <div class="mbtn-row">
+      <button class="mbtn-c" onclick="closeGold()">ยกเลิก</button>
+      <button class="mbtn-ok" onclick="confirmGold()">+ เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Settings / API Key -->
+<div class="overlay" id="settingsModal">
+  <div class="modal" style="width:min(460px,94vw)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3>⚙️ ตั้งค่า API Key</h3>
+      <button onclick="closeSettings()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">📈 Finnhub — หุ้น US / ทองคำ / USD-THB</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+        สมัครฟรีที่ <a href="https://finnhub.io/register" target="_blank" style="color:var(--blue)">finnhub.io/register</a>
+        · Free tier: 60 req/นาที · Auto-refresh ทุก 60 วินาที<br>
+        🔒 Key เก็บใน localStorage เครื่องคุณเท่านั้น ไม่ส่งออกไปที่อื่น
+      </div>
+      <div class="key-wrap">
+        <input class="minp" id="settingsFhKey" type="password" placeholder="วาง Finnhub API Key ที่นี่..." autocomplete="off" style="font-size:12px;letter-spacing:1px">
+        <button class="eye-btn" onclick="toggleKeyVisibility('settingsFhKey','eyeBtn')" id="eyeBtn" title="แสดง/ซ่อน Key">👁</button>
+        <button class="btn-test" onclick="testFinnhubKey()">🔍 ทดสอบ</button>
+        <button class="btn-clr" onclick="clearFinnhubKey()" title="ล้าง Key">✕</button>
+      </div>
+      <div class="key-status none" id="fhKeyStatus">ยังไม่มี Key — ราคาหุ้น US จะต้องกรอกเอง</div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">🇹🇭 Alpha Vantage — หุ้นไทย SET/MAI</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+        สมัครฟรีที่ <a href="https://www.alphavantage.co/support/#api-key" target="_blank" style="color:var(--blue)">alphavantage.co</a>
+        · Free tier: 25 req/วัน · ระบบคำนวณ interval อัตโนมัติไม่ให้เกิน<br>
+        ใช้ symbol เช่น PTT.BK, KBANK.BK, AOT.BK
+      </div>
+      <div class="key-wrap">
+        <input class="minp" id="settingsAvKey" type="password" placeholder="วาง Alpha Vantage API Key ที่นี่..." autocomplete="off" style="font-size:12px;letter-spacing:1px">
+        <button class="eye-btn" onclick="toggleKeyVisibility('settingsAvKey','eyeBtnAv')" id="eyeBtnAv" title="แสดง/ซ่อน Key">👁</button>
+        <button class="btn-test" onclick="testAlphaVantageKey()">🔍 ทดสอบ</button>
+        <button class="btn-clr" onclick="clearAlphaVantageKey()" title="ล้าง Key">✕</button>
+      </div>
+      <div class="key-status none" id="avKeyStatus">ยังไม่มี Key — ราคาหุ้นไทยจะต้องกรอกเอง</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px" id="avIntervalHint"></div>
+    </div>
+
+    <div style="background:var(--bg3);border-radius:8px;padding:12px;font-size:11px;color:var(--text3);line-height:1.8">
+      <div style="color:var(--text2);font-weight:600;margin-bottom:4px">📋 สรุป API Key ที่ใช้</div>
+      🇺🇸 หุ้น US + 🥇 ทอง + 💱 USD/THB → Finnhub (60 req/นาที) → refresh ทุก 60s<br>
+      🇹🇭 หุ้นไทย SET/MAI → Alpha Vantage (25 req/วัน) → refresh ทุก N ชั่วโมง (คำนวณอัตโนมัติ)<br>
+      🪙 Crypto → Bitkub (ไม่ต้องมี key) → refresh ทุก 60s
+    </div>
+
+    <div class="mbtn-row" style="margin-top:16px">
+      <button class="mbtn-c" onclick="closeSettings()">ปิด</button>
+      <button class="mbtn-ok" onclick="saveAllKeys()">💾 บันทึกทั้งหมด</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BODY ── -->
+<div class="hdr">
+  <div>
+    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v2</span></div>
+    <div class="status-row">
+      <div class="dot" id="liveDot"></div>
+      <div class="ts" id="lastUp">กำลังเชื่อมต่อ...</div>
+      <div class="cd-wrap">
+        <div class="cd-bar"><div class="cd-fill" id="cdFill" style="width:100%"></div></div>
+        <span id="cdSec">60s</span>
+      </div>
+    </div>
+    <div class="status-row" style="margin-top:2px">
+      <div class="ts" id="stockStatus" style="color:var(--text3)">📈 Finnhub: กำลังดึงราคาหุ้น US...</div>
+    </div>
+    <div class="status-row" style="margin-top:2px">
+      <div class="ts" id="goldStatus" style="color:var(--text3)">🥇 ราคาทอง: กำลังโหลด...</div>
+    </div>
+    <div class="status-row" style="margin-top:2px">
+      <div class="ts" id="thStockStatus" style="color:var(--text3)"></div>
+    </div>
+  </div>
+  <div class="hdr-btns">
+    <button class="btn-out" onclick="openSettings()" title="ตั้งค่า API Key">⚙️ API Key</button>
+    <button class="btn-out" onclick="resetAllData()" title="ล้างข้อมูลทั้งหมด" style="border-color:#f8717133;color:var(--dn)">🗑 Reset</button>
+    <button class="btn-out" onclick="exportJSON()" title="Export JSON">📤 Export</button>
+    <button class="btn-out" onclick="exportCSV()" title="Export CSV">📊 CSV</button>
+    <button class="btn-out" onclick="importJSON()" title="Import JSON">📥 Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(this)">
+    <button class="btn" onclick="fetchAll()" id="fetchBtn">⟳ รีเฟรช</button>
+  </div>
+</div>
+
+<div class="err" id="errBox"></div>
+
+<div class="kpi-grid">
+  <div class="kpi a"><div class="kpi-l">สินทรัพย์รวม</div><div class="kpi-v" id="kA">—</div></div>
+  <div class="kpi d"><div class="kpi-l">หนี้สินรวม</div><div class="kpi-v" id="kD" style="color:var(--dn)">—</div></div>
+  <div class="kpi n"><div class="kpi-l">💎 Net Worth จริง</div><div class="kpi-v" id="kN">—</div><div class="kpi-s" id="kNp"></div></div>
+  <div class="kpi c"><div class="kpi-l">Crypto กำไร/ขาดทุน</div><div class="kpi-v" id="kC">—</div><div class="kpi-s" id="kCp"></div></div>
+  <div class="kpi s"><div class="kpi-l">หุ้น กำไร/ขาดทุน</div><div class="kpi-v" id="kS">—</div><div class="kpi-s" id="kSp"></div></div>
+  <div class="kpi p"><div class="kpi-l">กำไรจากการขาย (Realized)</div><div class="kpi-v" id="kR">—</div><div class="kpi-s" id="kRp">ยอดรวมที่ขายออกแล้ว</div></div>
+  <div class="kpi" style="--c:#FFD700"><div class="kpi-l" style="color:#FFD700">🥇 ทองคำ กำไร/ขาดทุน</div><div class="kpi-v" id="kG">—</div><div class="kpi-s" id="kGp"></div></div>
+</div>
+
+<!-- Charts -->
+<div class="chart-grid">
+  <div class="chart-card">
+    <div class="chart-title">สัดส่วนพอร์ต</div>
+    <div class="donut-wrap">
+      <canvas id="donutCanvas" width="160" height="160"></canvas>
+      <div class="donut-legend" id="donutLegend"></div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="chart-title" style="margin-bottom:0" id="pnlChartTitle">กำไร/ขาดทุน — ภาพรวมกลุ่ม</div>
+      <div id="pnlFilterBtns" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    </div>
+    <canvas id="pnlCanvas"></canvas>
+    <div id="pnlSummary" style="margin-top:8px;font-size:10px;font-family:'IBM Plex Mono',monospace;min-height:14px"></div>
+  </div>
+</div>
+
+<!-- Sell Log -->
+<div class="sell-log" id="sellLogWrap" style="display:none">
+  <div class="sell-log-title">📋 ประวัติการขาย (Realized PnL)</div>
+  <div class="tbl-wrap" style="margin:0;border:none;border-radius:0">
+  <table>
+    <thead><tr>
+      <th style="text-align:left">วันที่</th>
+      <th style="text-align:left">สินทรัพย์</th>
+      <th>จำนวน</th><th>ราคาขาย</th><th>ต้นทุนเฉลี่ย</th>
+      <th>กำไร/ขาดทุน</th><th>%</th><th></th>
+    </tr></thead>
+    <tbody id="sellLogBody"></tbody>
+  </table>
+  </div>
+</div>
+
+<div class="tbl-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>ประเภท</th><th>สินทรัพย์</th><th>ราคา (฿)</th>
+      <th>จำนวน</th><th>ต้นทุนเฉลี่ย</th><th>ทุนรวม (฿)</th>
+      <th>มูลค่า (฿)</th><th>หนี้ (฿)</th><th>Equity / P&L</th><th>%</th><th>เป้า</th><th></th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+
+<footer>
+  Portfolio Live v2.1 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
+  Crypto: Bitkub · หุ้น US+ทอง: Finnhub · หุ้นไทย: Alpha Vantage · USD/THB: ExchangeRate API
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DEFAULT DATA
+// ═══════════════════════════════════════════════════════════
+const DEFAULT_CRYPTO = [
+  {sym:'BTC', bk:'THB_BTC', amt:0.05700899,  cost:177662.54, color:'#F7931A', history:[{date:'2024-01-01',amt:0.05700899, price:3115112,total:177662.54}], tp:null, sl:null},
+  {sym:'ETH', bk:'THB_ETH', amt:0.64986876,  cost:73598.00,  color:'#8b9cf7', history:[{date:'2024-01-01',amt:0.64986876, price:113252, total:73598.00}],  tp:null, sl:null},
+  {sym:'ADA', bk:'THB_ADA', amt:237.5836475, cost:9444.68,   color:'#60a5fa', history:[{date:'2024-01-01',amt:237.5836475,price:39.75,  total:9444.68}],   tp:null, sl:null},
+  {sym:'GALA',bk:'THB_GALA',amt:70556.54534, cost:93701.31,  color:'#a78bfa', history:[{date:'2024-01-01',amt:70556.54534,price:1.328,  total:93701.31}],  tp:null, sl:null},
+  {sym:'DOGE',bk:'THB_DOGE',amt:35.9,        cost:611.13,    color:'#fbbf24', history:[{date:'2024-01-01',amt:35.9,       price:17.02,  total:611.13}],    tp:null, sl:null},
+  {sym:'DOT', bk:'THB_DOT', amt:2.75649153,  cost:1000.00,   color:'#f472b6', history:[{date:'2024-01-01',amt:2.75649153, price:362.76, total:1000.00}],   tp:null, sl:null},
+  {sym:'KUB', bk:'THB_KUB', amt:11.16694584, cost:1000.00,   color:'#34d399', history:[{date:'2024-01-01',amt:11.16694584,price:89.56,  total:1000.00}],   tp:null, sl:null},
+];
+const DEFAULT_STOCKS = [
+  {sym:'SBET',amt:6.72257,    cost:3641.06,price:542.0, exchange:'US', finnhubSym:'SBET', history:[{date:'2024-01-01',amt:6.72257,   price:541.6,total:3641.06}], tp:null, sl:null},
+  {sym:'ABTC',amt:11.2789387, cost:826.74, price:73.25, exchange:'US', finnhubSym:'ABTC', history:[{date:'2024-01-01',amt:11.2789387,price:73.3, total:826.74}],  tp:null, sl:null},
+];
+const DEFAULT_OTHERS = [
+  {name:'หุ้นสหกรณ์', icon:'🏦', color:'#34d399', mktVal:129900, cost:129900, debt:122000},
+];
+const DEFAULT_SELL_LOG = [];
+// ทองคำ: 1 บาทไทย = 15.244g = 0.49011 troy oz
+const BAHT_TO_OZ = 0.49011;
+const DEFAULT_GOLD = []; // ว่างไว้ให้ผู้ใช้เพิ่มเอง
+
+// ═══════════════════════════════════════════════════════════
+// LOCALSTORAGE
+// ═══════════════════════════════════════════════════════════
+const LS_KEY = 'portfolio_live_v2';
+function loadData(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+function saveData(){
+  try{
+    const data = {
+      crypto: CRYPTO.map(c=>({...c})),
+      stocks: STOCKS.map(s=>({...s})),
+      others: OTHERS.map(o=>({...o})),
+      gold:   GOLD.map(g=>({...g})),
+      sellLog: SELL_LOG.map(x=>({...x})),
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    showToast('💾 บันทึกแล้ว');
+  }catch(e){ showToast('⚠️ บันทึกไม่ได้'); }
+}
+function showToast(msg){
+  const t = document.getElementById('saveToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT DATA
+// ═══════════════════════════════════════════════════════════
+const saved = loadData();
+let CRYPTO   = saved ? saved.crypto.map(c=>({tp:null,sl:null,...c})) : DEFAULT_CRYPTO.map(c=>({...c}));
+let STOCKS   = saved ? saved.stocks.map(s=>({tp:null,sl:null,exchange:'US',finnhubSym:s.finnhubSym||s.sym,...s})) : DEFAULT_STOCKS.map(s=>({...s}));
+let OTHERS   = saved ? saved.others.map(o=>({...o})) : DEFAULT_OTHERS.map(o=>({...o}));
+let SELL_LOG = saved ? (saved.sellLog||[]) : [...DEFAULT_SELL_LOG];
+let GOLD     = saved ? (saved.gold||[...DEFAULT_GOLD]) : [...DEFAULT_GOLD];
+
+let goldPricePerBaht = 0; // ราคาทองต่อบาทไทย (฿) — ดึง live
+
+const FALLBACK={THB_BTC:2564100,THB_ETH:58080,THB_ADA:7.72,THB_GALA:0.0942,THB_DOGE:2.965,THB_DOT:8.09,THB_KUB:37.71};
+let prices={...FALLBACK};
+let stockPrices={}; // USD prices from Finnhub
+let usdThb=36.0;    // USD/THB fallback rate
+let tradeTarget=null, addType='crypto', targetTarget=null, currentTab='buy';
+
+// ── FINNHUB CONFIG — อ่านจาก localStorage ──
+function getFinnhubKey(){ return localStorage.getItem('finnhub_api_key')||''; }
+let FINNHUB_KEY = getFinnhubKey();
+
+// ═══════════════════════════════════════════════════════════
+// FORMATTERS
+// ═══════════════════════════════════════════════════════════
+const fmtB   = n=>'฿'+Math.round(n).toLocaleString('th-TH');
+const fmtN   = n=>n>=1000?n.toFixed(2):n>=1?n.toFixed(4):n.toFixed(8);
+const fmtP   = n=>n>=1000?n.toLocaleString('en-US',{maximumFractionDigits:0}):n>=100?n.toFixed(2):n>=1?n.toFixed(4):n.toFixed(6);
+const badge  = v=>`<span class="badge ${v>=0?'up-b':'dn-b'}">${v>=0?'+':''}${fmtB(v)}</span>`;
+const badgePct=v=>`<span class="badge ${v>=0?'up-b':'dn-b'}">${v>=0?'+':''}${v.toFixed(1)}%</span>`;
+const COLORS =['#F7931A','#8b9cf7','#60a5fa','#a78bfa','#fbbf24','#f472b6','#34d399','#fb923c','#e879f9','#38bdf8'];
+
+// ═══════════════════════════════════════════════════════════
+// TRADE MODAL (BUY + SELL)
+// ═══════════════════════════════════════════════════════════
+function openTrade(type,idx){
+  tradeTarget={type,idx};
+  const it=type==='crypto'?CRYPTO[idx]:STOCKS[idx];
+  const avg=it.amt>0?it.cost/it.amt:0;
+  document.getElementById('mTitle').textContent=it.sym;
+  document.getElementById('mSub').textContent=`ถือ ${fmtN(it.amt)} ${it.sym} · ทุน ${fmtB(it.cost)} · เฉลี่ย ${fmtB(avg)}/หน่วย`;
+  document.getElementById('mAmt').value='';
+  document.getElementById('mDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('sDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mPrice').value=type==='crypto'?(prices[it.bk]||''):(it.price||'');
+  document.getElementById('sPrice').value=type==='crypto'?(prices[it.bk]||''):(it.price||'');
+  document.getElementById('sAmt').value='';
+  document.getElementById('mPreview').innerHTML='<span style="color:var(--text3)">กรอกจำนวนและราคาเพื่อดูผลคำนวณ</span>';
+  document.getElementById('sPreview').innerHTML='<span style="color:var(--text3)">กรอกจำนวนและราคาเพื่อดูกำไร/ขาดทุน</span>';
+  switchTab('buy');
+  document.getElementById('tradeModal').classList.add('show');
+}
+function closeTrade(){document.getElementById('tradeModal').classList.remove('show');tradeTarget=null;}
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('buyPanel').style.display=tab==='buy'?'block':'none';
+  document.getElementById('sellPanel').style.display=tab==='sell'?'block':'none';
+  document.getElementById('tabBuy').className='tab'+(tab==='buy'?' active':'');
+  document.getElementById('tabSell').className='tab'+(tab==='sell'?' active-sell':'');
+}
+function updatePreview(){
+  if(!tradeTarget)return;
+  const addAmt=parseFloat(document.getElementById('mAmt').value)||0;
+  const buyPr=parseFloat(document.getElementById('mPrice').value)||0;
+  const it=tradeTarget.type==='crypto'?CRYPTO[tradeTarget.idx]:STOCKS[tradeTarget.idx];
+  if(addAmt<=0||buyPr<=0){document.getElementById('mPreview').innerHTML='<span style="color:var(--text3)">กรอกจำนวนและราคาเพื่อดูผลคำนวณ</span>';return;}
+  const addCost=addAmt*buyPr,newAmt=it.amt+addAmt,newCost=it.cost+addCost,newAvg=newCost/newAmt,oldAvg=it.amt>0?it.cost/it.amt:0,diff=newAvg-oldAvg;
+  document.getElementById('mPreview').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="color:var(--text3);font-size:10px">จ่ายเพิ่ม</div><div style="font-weight:600">${fmtB(addCost)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">จำนวนใหม่</div><div style="color:var(--up);font-weight:600">${fmtN(newAmt)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">ทุนรวมใหม่</div><div style="font-weight:600">${fmtB(newCost)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">เฉลี่ยใหม่</div>
+        <div style="color:var(--up);font-weight:600">${fmtB(newAvg)} <span style="font-size:10px;color:${diff<=0?'var(--up)':'var(--dn)'}">${diff<=0?'▼':'▲'}${fmtB(Math.abs(diff))}</span></div>
+      </div>
+    </div>`;
+}
+function updateSellPreview(){
+  if(!tradeTarget)return;
+  const sellAmt=parseFloat(document.getElementById('sAmt').value)||0;
+  const sellPr=parseFloat(document.getElementById('sPrice').value)||0;
+  const it=tradeTarget.type==='crypto'?CRYPTO[tradeTarget.idx]:STOCKS[tradeTarget.idx];
+  if(sellAmt<=0||sellPr<=0){document.getElementById('sPreview').innerHTML='<span style="color:var(--text3)">กรอกจำนวนและราคาเพื่อดูกำไร/ขาดทุน</span>';return;}
+  if(sellAmt>it.amt){document.getElementById('sPreview').innerHTML='<span style="color:var(--dn)">⚠️ จำนวนที่ขายมากกว่าที่ถือ</span>';return;}
+  const avgCost=it.amt>0?it.cost/it.amt:0;
+  const proceeds=sellAmt*sellPr;
+  const costBasis=sellAmt*avgCost;
+  const pnl=proceeds-costBasis;
+  const pct=costBasis>0?pnl/costBasis*100:0;
+  document.getElementById('sPreview').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="color:var(--text3);font-size:10px">รับเงิน</div><div style="color:var(--up);font-weight:600">${fmtB(proceeds)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">ต้นทุน (FIFO)</div><div style="font-weight:600">${fmtB(costBasis)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">กำไร/ขาดทุน</div><div style="color:${pnl>=0?'var(--up)':'var(--dn)'};font-weight:700;font-size:14px">${pnl>=0?'+':''}${fmtB(pnl)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">%</div><div style="color:${pnl>=0?'var(--up)':'var(--dn)'};font-weight:700">${pct>=0?'+':''}${pct.toFixed(2)}%</div></div>
+    </div>`;
+}
+function confirmBuy(){
+  if(!tradeTarget)return;
+  const addAmt=parseFloat(document.getElementById('mAmt').value)||0;
+  const buyPr=parseFloat(document.getElementById('mPrice').value)||0;
+  const date=document.getElementById('mDate').value||new Date().toISOString().split('T')[0];
+  if(addAmt<=0||buyPr<=0){alert('กรุณากรอกจำนวนและราคา');return;}
+  const it=tradeTarget.type==='crypto'?CRYPTO[tradeTarget.idx]:STOCKS[tradeTarget.idx];
+  const addCost=addAmt*buyPr;
+  it.amt+=addAmt; it.cost+=addCost;
+  if(tradeTarget.type==='stock') it.price=buyPr;
+  it.history.push({date,amt:addAmt,price:buyPr,total:addCost});
+  closeTrade(); saveData(); renderTable();
+}
+function confirmSell(){
+  if(!tradeTarget)return;
+  const sellAmt=parseFloat(document.getElementById('sAmt').value)||0;
+  const sellPr=parseFloat(document.getElementById('sPrice').value)||0;
+  const date=document.getElementById('sDate').value||new Date().toISOString().split('T')[0];
+  if(sellAmt<=0||sellPr<=0){alert('กรุณากรอกจำนวนและราคา');return;}
+  const it=tradeTarget.type==='crypto'?CRYPTO[tradeTarget.idx]:STOCKS[tradeTarget.idx];
+  if(sellAmt>it.amt){alert('จำนวนที่ขายมากกว่าที่ถือ');return;}
+  const avgCost=it.amt>0?it.cost/it.amt:0;
+  const costBasis=sellAmt*avgCost;
+  const proceeds=sellAmt*sellPr;
+  const pnl=proceeds-costBasis;
+  const pct=costBasis>0?pnl/costBasis*100:0;
+  // update holdings
+  it.amt-=sellAmt;
+  it.cost=it.amt*avgCost; // keep avg cost
+  // log
+  SELL_LOG.push({date,sym:it.sym,type:tradeTarget.type,sellAmt,sellPr,avgCost,proceeds,pnl,pct});
+  closeTrade(); saveData(); renderTable(); renderSellLog();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADD MODAL
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ADD MODAL — รองรับหลาย Exchange
+// ═══════════════════════════════════════════════════════════
+let selectedExchange='US';
+const EXCHANGE_HINTS={
+  US:'🇺🇸 ดึงราคา Live จาก Finnhub อัตโนมัติ · แปลง USD→฿ ทุก 60s\nตัวอย่าง: AAPL, TSLA, NVDA, SBET, ABTC',
+  TH:'🇹🇭 ดึงราคา Live จาก Alpha Vantage (25 req/วัน)\nRefresh อัตโนมัติตามจำนวนหุ้น · ต้องใส่ AV Key ใน ⚙️ ก่อน\nตัวอย่าง: PTT, KBANK, AOT, CPALL, SCB',
+  MANUAL:'✏️ กรอกราคาเองในตาราง · เหมาะกับหุ้น JP, HK, SG หรือตลาดอื่นๆ'
+};
+function setExchange(ex){
+  selectedExchange=ex;
+  ['US','TH','MANUAL'].forEach(e=>document.getElementById('ex'+e).classList.toggle('active',e===ex));
+  document.getElementById('amExHint').textContent=EXCHANGE_HINTS[ex]||'';
+  // แสดง/ซ่อน price field
+  document.getElementById('amPriceRow').style.display=ex==='MANUAL'?'grid':'none';
+  // อัปเดต symbol hint
+  amSymHint();
+}
+function amSymHint(){
+  if(addType!=='stock') return;
+  const sym=document.getElementById('amSym').value.trim().toUpperCase();
+  if(!sym) return;
+  if(selectedExchange==='TH'){
+    document.getElementById('amBk').value=sym+'.BK';
+  } else if(selectedExchange==='US'){
+    document.getElementById('amBk').value=sym;
+  }
+}
+function openAdd(type){
+  addType=type;
+  selectedExchange='US';
+  document.getElementById('amTitle').textContent=type==='crypto'?'+ เพิ่ม Crypto':'+ เพิ่มหุ้น';
+  document.getElementById('amBkLbl').textContent=type==='crypto'?'Bitkub Symbol':'Finnhub Symbol';
+  document.getElementById('amBk').placeholder=type==='crypto'?'เช่น THB_SOL':'อัตโนมัติ';
+  // แสดง/ซ่อน exchange selector
+  document.getElementById('amExRow').style.display=type==='stock'?'block':'none';
+  document.getElementById('amPriceRow').style.display='none';
+  ['amSym','amBk','amAmt','amCost','amPrice'].forEach(id=>document.getElementById(id).value='');
+  if(type==='stock'){
+    setExchange('US');
+  }
+  document.getElementById('addModal').classList.add('show');
+}
+function closeAdd(){document.getElementById('addModal').classList.remove('show');}
+function confirmAdd(){
+  const sym=document.getElementById('amSym').value.trim().toUpperCase();
+  const bkRaw=document.getElementById('amBk').value.trim().toUpperCase();
+  const amt=parseFloat(document.getElementById('amAmt').value)||0;
+  const cost=parseFloat(document.getElementById('amCost').value)||0;
+  const price=parseFloat(document.getElementById('amPrice').value)||0;
+  if(!sym){alert('กรุณากรอกชื่อสินทรัพย์');return;}
+  const today=new Date().toISOString().split('T')[0];
+  const avgP=amt>0?cost/amt:0;
+  if(addType==='crypto'){
+    const bk=bkRaw||'THB_'+sym;
+    CRYPTO.push({sym,bk,amt,cost,color:COLORS[CRYPTO.length%COLORS.length],history:[{date:today,amt,price:avgP,total:cost}],tp:null,sl:null});
+    FALLBACK[bk]=0; fetchAll();
+  } else {
+    // หุ้น — บันทึก exchange และ finnhub symbol
+    let finnhubSym=bkRaw||sym;
+    if(selectedExchange==='TH' && !finnhubSym.endsWith('.BK')) finnhubSym=sym+'.BK';
+    const initPrice=selectedExchange==='MANUAL'?price:avgP;
+    STOCKS.push({
+      sym, exchange:selectedExchange,
+      finnhubSym,            // symbol ที่ใช้ดึงจาก Finnhub
+      amt, cost, price:initPrice,
+      history:[{date:today,amt,price:initPrice,total:cost}],
+      tp:null, sl:null
+    });
+    saveData(); fetchAll();
+    if(selectedExchange==='TH') startThStockTimer();
+  }
+  closeAdd();
+}
+
+// ── Emoji Picker ──
+function toggleEmojiPicker(){
+  const p=document.getElementById('emojiPicker');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+function pickEmoji(e){
+  document.getElementById('otIcon').value=e;
+  document.getElementById('emojiPicker').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// OTHER ASSETS MODAL
+// ═══════════════════════════════════════════════════════════
+function openOther(){
+  ['otName','otVal','otCost','otIcon'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('otDebt').value='0';
+  document.getElementById('otIcon').value='🏠';
+  document.getElementById('emojiPicker').style.display='none';
+  document.getElementById('otPreviewBox').innerHTML='<span style="color:var(--text3)">กรอกข้อมูลเพื่อดูตัวอย่าง</span>';
+  document.getElementById('otherModal').classList.add('show');
+}
+function closeOther(){document.getElementById('otherModal').classList.remove('show');}
+function otPreview(){
+  const mktVal=parseFloat(document.getElementById('otVal').value)||0;
+  const cost=parseFloat(document.getElementById('otCost').value)||0;
+  const debt=parseFloat(document.getElementById('otDebt').value)||0;
+  const equity=mktVal-debt,pnl=mktVal-cost;
+  if(mktVal<=0){document.getElementById('otPreviewBox').innerHTML='<span style="color:var(--text3)">กรอกมูลค่าเพื่อดูตัวอย่าง</span>';return;}
+  document.getElementById('otPreviewBox').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="color:var(--text3);font-size:10px">มูลค่าตลาด</div><div style="font-weight:600">${fmtB(mktVal)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">หนี้ผูกติด</div><div style="color:var(--dn);font-weight:600">−${fmtB(debt)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">Equity สุทธิ</div><div style="color:var(--up);font-weight:600">${fmtB(equity)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">กำไร/ขาดทุน</div><div style="color:${pnl>=0?'var(--up)':'var(--dn)'};font-weight:600">${pnl>=0?'+':''}${fmtB(pnl)}</div></div>
+    </div>`;
+}
+function confirmOther(){
+  const name=document.getElementById('otName').value.trim();
+  const mktVal=parseFloat(document.getElementById('otVal').value)||0;
+  const cost=parseFloat(document.getElementById('otCost').value)||0;
+  const debt=parseFloat(document.getElementById('otDebt').value)||0;
+  const icon=document.getElementById('otIcon').value||'🏠';
+  const color=document.getElementById('otColor').value||'#34d399';
+  if(!name){alert('กรุณากรอกชื่อสินทรัพย์');return;}
+  OTHERS.push({name,icon,color,mktVal,cost,debt});
+  closeOther(); saveData(); renderTable();
+}
+function removeOther(i){if(confirm(`ลบ ${OTHERS[i].name}?`)){OTHERS.splice(i,1);saveData();renderTable();}}
+
+// ═══════════════════════════════════════════════════════════
+// REMOVE
+// ═══════════════════════════════════════════════════════════
+function removeCrypto(i){if(confirm(`ลบ ${CRYPTO[i].sym}?`)){CRYPTO.splice(i,1);saveData();renderTable();}}
+function removeStock(i){if(confirm(`ลบ ${STOCKS[i].sym}?`)){STOCKS.splice(i,1);saveData();renderTable();}}
+
+// ═══════════════════════════════════════════════════════════
+// TARGET PRICE MODAL
+// ═══════════════════════════════════════════════════════════
+function openTarget(type,idx){
+  targetTarget={type,idx};
+  const it=type==='crypto'?CRYPTO[idx]:STOCKS[idx];
+  const p=type==='crypto'?(prices[it.bk]||0):it.price;
+  document.getElementById('tmTitle').textContent=`🎯 ตั้งเป้าราคา ${it.sym}`;
+  document.getElementById('tmSub').textContent=`ราคาปัจจุบัน ${fmtP(p)} ฿ · ต้นทุนเฉลี่ย ${fmtB(it.amt>0?it.cost/it.amt:0)}/หน่วย`;
+  document.getElementById('tmTP').value=it.tp||'';
+  document.getElementById('tmSL').value=it.sl||'';
+  document.getElementById('targetModal').classList.add('show');
+}
+function closeTarget(){document.getElementById('targetModal').classList.remove('show');targetTarget=null;}
+function clearTarget(){
+  if(!targetTarget)return;
+  const it=targetTarget.type==='crypto'?CRYPTO[targetTarget.idx]:STOCKS[targetTarget.idx];
+  it.tp=null; it.sl=null;
+  closeTarget(); saveData(); renderTable();
+}
+function confirmTarget(){
+  if(!targetTarget)return;
+  const it=targetTarget.type==='crypto'?CRYPTO[targetTarget.idx]:STOCKS[targetTarget.idx];
+  it.tp=parseFloat(document.getElementById('tmTP').value)||null;
+  it.sl=parseFloat(document.getElementById('tmSL').value)||null;
+  closeTarget(); saveData(); renderTable();
+}
+function checkTargets(){
+  [...CRYPTO.map((c,i)=>({...c,type:'crypto',idx:i})), ...STOCKS.map((s,i)=>({...s,type:'stock',idx:i}))]
+  .forEach(it=>{
+    const p=it.type==='crypto'?(prices[it.bk]||0):it.price;
+    if(!p)return;
+    if(it.tp&&p>=it.tp) showToast(`🎯 ${it.sym} ถึง TP! ${fmtP(p)} ≥ ${fmtP(it.tp)}`);
+    if(it.sl&&p<=it.sl) showToast(`🚨 ${it.sym} ถึง SL! ${fmtP(p)} ≤ ${fmtP(it.sl)}`);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// HISTORY MODAL
+// ═══════════════════════════════════════════════════════════
+let histTarget=null;
+function openHist(type,assetIdx){
+  histTarget={type,assetIdx};
+  const it=type==='crypto'?CRYPTO[assetIdx]:STOCKS[assetIdx];
+  document.getElementById('histTitle').textContent='ประวัติการซื้อ — '+it.sym;
+  renderHistModal(type,assetIdx);
+  document.getElementById('histModal').classList.add('show');
+}
+function closeHist(){document.getElementById('histModal').classList.remove('show');histTarget=null;}
+function renderHistModal(type,assetIdx){
+  const it=type==='crypto'?CRYPTO[assetIdx]:STOCKS[assetIdx];
+  if(!it.history.length){document.getElementById('histBody').innerHTML='<div style="color:var(--text3);text-align:center;padding:16px">ไม่มีประวัติ</div>';return;}
+  let html='';
+  it.history.forEach((h,hi)=>{
+    html+=`<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:center">
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">วันที่</div>
+          <input style="background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:4px 5px;font-size:11px;color:var(--warn);font-family:'IBM Plex Mono',monospace;width:100%" type="date" value="${h.date}" onchange="editHist('${type}',${assetIdx},${hi},'date',this.value)"/></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">จำนวน</div>
+          <input style="background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:4px 5px;font-size:11px;color:var(--warn);font-family:'IBM Plex Mono',monospace;width:100%" type="number" step="any" value="${h.amt}" onchange="editHist('${type}',${assetIdx},${hi},'amt',this.value)"/></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">ราคา/หน่วย (฿)</div>
+          <input style="background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:4px 5px;font-size:11px;color:var(--warn);font-family:'IBM Plex Mono',monospace;width:100%" type="number" step="any" value="${h.price}" onchange="editHist('${type}',${assetIdx},${hi},'price',this.value)"/></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">ลบ</div>
+          <button onclick="deleteHist('${type}',${assetIdx},${hi})" style="background:none;border:1px solid #f8717133;color:var(--dn);border-radius:4px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button></div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px">รวมจ่าย: <span style="color:var(--text2);font-family:'IBM Plex Mono',monospace">${fmtB(h.total)}</span></div>
+    </div>`;
+  });
+  document.getElementById('histBody').innerHTML=html;
+}
+function editHist(type,assetIdx,hi,field,val){
+  const it=type==='crypto'?CRYPTO[assetIdx]:STOCKS[assetIdx];
+  const h=it.history[hi];
+  if(field==='date') h.date=val;
+  else if(field==='amt') h.amt=parseFloat(val)||0;
+  else if(field==='price') h.price=parseFloat(val)||0;
+  h.total=h.amt*h.price;
+  it.amt=it.history.reduce((s,x)=>s+x.amt,0);
+  it.cost=it.history.reduce((s,x)=>s+x.total,0);
+  renderHistModal(type,assetIdx); renderTable(); saveData();
+}
+function deleteHist(type,assetIdx,hi){
+  const it=type==='crypto'?CRYPTO[assetIdx]:STOCKS[assetIdx];
+  if(it.history.length<=1){alert('ต้องมีประวัติอย่างน้อย 1 รายการ');return;}
+  if(!confirm('ลบรายการนี้?'))return;
+  it.history.splice(hi,1);
+  it.amt=it.history.reduce((s,x)=>s+x.amt,0);
+  it.cost=it.history.reduce((s,x)=>s+x.total,0);
+  renderHistModal(type,assetIdx); renderTable(); saveData();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SELL LOG
+// ═══════════════════════════════════════════════════════════
+function renderSellLog(){
+  const wrap=document.getElementById('sellLogWrap');
+  if(!SELL_LOG.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const body=document.getElementById('sellLogBody');
+  let html='';
+  SELL_LOG.slice().reverse().forEach((x,ri)=>{
+    const i=SELL_LOG.length-1-ri;
+    html+=`<tr>
+      <td style="text-align:left;font-family:'IBM Plex Mono',monospace">${x.date}</td>
+      <td style="text-align:left">${x.sym}</td>
+      <td>${fmtN(x.sellAmt)}</td>
+      <td>${fmtP(x.sellPr)}</td>
+      <td style="color:var(--text3)">${fmtB(x.avgCost)}</td>
+      <td>${badge(x.pnl)}</td>
+      <td>${badgePct(x.pct)}</td>
+      <td><button class="btn-del" onclick="deleteSellLog(${i})">✕</button></td>
+    </tr>`;
+  });
+  body.innerHTML=html;
+}
+function deleteSellLog(i){
+  if(!confirm('ลบประวัติการขายนี้?'))return;
+  SELL_LOG.splice(i,1); saveData(); renderSellLog();
+  document.getElementById('kR').textContent=fmtB(SELL_LOG.reduce((s,x)=>s+x.pnl,0));
+}
+
+// ═══════════════════════════════════════════════════════════
+// FINNHUB — US STOCK LIVE PRICE
+// ═══════════════════════════════════════════════════════════
+async function fetchUsdThb(){
+  // ลอง ExchangeRate API (ฟรี ไม่ต้อง key)
+  try{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-cache'});
+    const d=await r.json();
+    if(d.rates&&d.rates.THB) { usdThb=parseFloat(d.rates.THB)||36.0; return; }
+  }catch(e){}
+  // fallback: Alpha Vantage
+  const avk=getAlphaVantageKey();
+  if(avk){
+    try{
+      const r2=await fetch(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=THB&apikey=${avk}`);
+      const d2=await r2.json();
+      const rate=d2?.['Realtime Currency Exchange Rate']?.['5. Exchange Rate'];
+      if(rate) { usdThb=parseFloat(rate)||36.0; return; }
+    }catch(e2){}
+  }
+  // fallback ค่าเดิม
+}
+
+async function fetchStockPrices(){
+  FINNHUB_KEY=getFinnhubKey();
+  // Free tier ดึงได้เฉพาะ US — หุ้นไทย (.BK) ต้อง Pro plan
+  const toFetch=STOCKS.filter(s=>s.exchange==='US');
+  const thStocks=STOCKS.filter(s=>s.exchange==='TH');
+  const manualStocks=STOCKS.filter(s=>s.exchange==='MANUAL');
+  const statusEl=document.getElementById('stockStatus');
+  if(!toFetch.length && !thStocks.length){
+    if(statusEl){statusEl.textContent='📈 ไม่มีหุ้นในพอร์ต';statusEl.style.color='var(--text3)';}
+    return;
+  }
+  if(!FINNHUB_KEY){
+    if(statusEl){ statusEl.textContent='⚙️ ยังไม่มี Finnhub Key — กด API Key เพื่อตั้งค่า'; statusEl.style.color='var(--warn)'; }
+    return;
+  }
+  let okCount=0, failCount=0;
+  if(toFetch.length){
+    await Promise.all(toFetch.map(async s=>{
+      const fsym = s.finnhubSym || s.sym;
+      try{
+        const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${fsym}&token=${FINNHUB_KEY}`,{cache:'no-cache'});
+        const d=await r.json();
+        if(d&&d.c&&d.c>0){
+          const idx=STOCKS.findIndex(x=>x.sym===s.sym&&x.exchange===s.exchange);
+          if(idx>=0){
+            stockPrices[s.sym]=d.c;
+            STOCKS[idx].price=parseFloat((d.c*usdThb).toFixed(4));
+          }
+          okCount++;
+        } else { failCount++; }
+      }catch(e){ failCount++; }
+    }));
+  }
+  if(statusEl){
+    const parts=[];
+    if(toFetch.length){
+      if(failCount===0) parts.push(`🇺🇸 US ×${toFetch.length} Live ($1=${usdThb.toFixed(2)}฿)`);
+      else parts.push(`🇺🇸 US ${okCount}/${toFetch.length}`);
+    }
+    if(thStocks.length) parts.push(`🇹🇭 TH ×${thStocks.length} (AV)`);
+    if(manualStocks.length) parts.push(`✏️ ×${manualStocks.length}`);
+    statusEl.textContent=`📈 ${parts.join(' · ')} · ${new Date().toLocaleTimeString('th-TH')}`;
+    statusEl.style.color=failCount===0?'var(--up)':'var(--warn)';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// GOLD — ราคาทองคำ Live ผ่าน GLD ETF (Finnhub Free tier)
+// GLD = SPDR Gold Trust · 1 share ≈ 1/10 oz XAU
+// XAU/oz = GLD price × 10 (approximate)
+// ฿/บาทไทย = XAU/oz × BAHT_TO_OZ × USD/THB
+// ═══════════════════════════════════════════════════════════
+async function fetchGoldPrice(){
+  FINNHUB_KEY=getFinnhubKey();
+  const statusEl=document.getElementById('goldStatus');
+  if(!FINNHUB_KEY){
+    if(statusEl){statusEl.textContent='🥇 ทอง: ต้องตั้งค่า Finnhub Key ก่อน';statusEl.style.color='var(--warn)';}
+    return;
+  }
+  try{
+    // ดึง GLD ETF (1 share ≈ 0.0926 oz XAU)
+    const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=GLD&token=${FINNHUB_KEY}`,{cache:'no-cache'});
+    const d=await r.json();
+    if(d&&d.c&&d.c>0){
+      // GLD NAV = ประมาณ 0.0926 oz ต่อ share (ค่าคงที่ของกองทุน)
+      const GLD_OZ_PER_SHARE = 0.0926;
+      const xauUsd = d.c / GLD_OZ_PER_SHARE;      // คำนวณ XAU/oz จาก GLD
+      goldPricePerBaht = xauUsd * BAHT_TO_OZ * usdThb; // ฿/บาทไทย
+      if(statusEl){
+        const p9999=Math.round(goldPricePerBaht).toLocaleString('th-TH');
+        const p965 =Math.round(goldPricePerBaht*0.965).toLocaleString('th-TH');
+        statusEl.textContent=`🥇 ทอง Live · 99.99%=฿${p9999} · 96.5%=฿${p965}/บาท · GLD $${d.c.toFixed(2)} · ${new Date().toLocaleTimeString('th-TH')}`;
+        statusEl.style.color='#FFD700';
+      }
+      const hint=document.getElementById('gdCurHint');
+      if(hint) hint.textContent=`ราคา Spot 99.99%: ฿${Math.round(goldPricePerBaht).toLocaleString('th-TH')}/บาท`;
+    } else {
+      if(statusEl){statusEl.textContent='🥇 ทอง: GLD ดึงไม่ได้ (ตลาดปิด/key หมด)';statusEl.style.color='var(--text3)';}
+    }
+  }catch(e){
+    if(statusEl){statusEl.textContent='🥇 ทอง: ดึงราคาไม่ได้ — '+e.message;statusEl.style.color='var(--text3)';}
+  }
+}
+
+// ── Gold Modal ──
+const GOLD_PURITY = { '9999':1.0, '965':0.965, 'jewel':0.965 };
+const GOLD_TYPE_HINTS = {
+  '9999': '🟡 ทองแท่ง 99.99% (International Gold Bar)\nราคา = XAU Spot × 0.4901 oz × USD/THB เต็ม 100%',
+  '965':  '🟠 ทองแท่ง 96.5% (มาตรฐานไทย — สคบ.)\nราคา = XAU Spot × 0.965 × 0.4901 oz × USD/THB',
+  'jewel':'💍 ทองรูปพรรณ 96.5%\nมีค่ากำเหน็จเพิ่มตอนซื้อ — ตอนขายได้ราคา 96.5% เท่านั้น\nค่ากำเหน็จถือเป็นต้นทุนที่หักไม่ได้คืน'
+};
+let selectedGoldType = '9999';
+
+function setGoldType(type){
+  selectedGoldType = type;
+  ['9999','965','jewel'].forEach(t=>{
+    document.getElementById('gt'+t).classList.toggle('active', t===type);
+  });
+  document.getElementById('gdTypeHint').textContent = GOLD_TYPE_HINTS[type];
+  document.getElementById('gdMakingRow').style.display = type==='jewel'?'grid':'none';
+  goldPreview();
+}
+
+function getGoldSpotPerBaht(){
+  // ราคา Spot ต่อบาทไทย (99.99%)
+  return goldPricePerBaht;
+}
+function getGoldMarketPerBaht(type){
+  // ราคาตลาดที่ขายได้จริง ตามประเภท
+  const spot = getGoldSpotPerBaht();
+  if(!spot) return 0;
+  return spot * GOLD_PURITY[type];
+}
+
+function openGold(){
+  selectedGoldType='9999';
+  ['9999','965','jewel'].forEach(t=>document.getElementById('gt'+t).classList.toggle('active',t==='9999'));
+  ['gdName','gdAmt','gdBuyPrice','gdMaking'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('gdDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('gdPreview').innerHTML='<span style="color:var(--text3)">กรอกข้อมูลเพื่อดูผลคำนวณ</span>';
+  document.getElementById('gdMakingRow').style.display='none';
+  document.getElementById('gdTypeHint').textContent=GOLD_TYPE_HINTS['9999'];
+  const hint=document.getElementById('gdCurHint');
+  if(goldPricePerBaht>0) hint.textContent=`ราคา Spot 99.99%: ฿${Math.round(goldPricePerBaht).toLocaleString('th-TH')}/บาท`;
+  else hint.textContent='ราคาตลาด: ยังไม่ได้ดึง (ต้องมี Finnhub Key)';
+  document.getElementById('goldModal').classList.add('show');
+}
+function closeGold(){document.getElementById('goldModal').classList.remove('show');}
+
+function goldPreview(){
+  const amt=parseFloat(document.getElementById('gdAmt').value)||0;
+  const buyP=parseFloat(document.getElementById('gdBuyPrice').value)||0;
+  const making=parseFloat(document.getElementById('gdMaking')?.value)||0;
+  if(amt<=0||buyP<=0){document.getElementById('gdPreview').innerHTML='<span style="color:var(--text3)">กรอกข้อมูลเพื่อดูผลคำนวณ</span>';return;}
+
+  const totalCost = amt*(buyP + (selectedGoldType==='jewel'?making:0));
+  const sellPrice = getGoldMarketPerBaht(selectedGoldType); // ราคาขายจริง
+  const curVal = sellPrice>0 ? amt*sellPrice : 0;
+  const pnl = curVal - totalCost;
+  const pct = totalCost>0?pnl/totalCost*100:0;
+
+  const typeLabel = selectedGoldType==='9999'?'99.99%':selectedGoldType==='965'?'96.5%':'รูปพรรณ 96.5%';
+  document.getElementById('gdPreview').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="color:var(--text3);font-size:10px">ประเภท</div><div style="font-weight:600">${typeLabel}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">น้ำหนัก</div><div style="font-weight:600">${amt} บาทไทย</div></div>
+      <div><div style="color:var(--text3);font-size:10px">ต้นทุนรวม${selectedGoldType==='jewel'?' (รวมกำเหน็จ)':''}</div><div style="font-weight:600">${fmtB(totalCost)}</div></div>
+      <div><div style="color:var(--text3);font-size:10px">ราคาขายได้ตอนนี้</div><div style="color:var(--up);font-weight:600">${sellPrice>0?fmtB(curVal):'รอ Live...'}</div></div>
+      ${sellPrice>0?`<div style="grid-column:1/-1"><div style="color:var(--text3);font-size:10px">กำไร/ขาดทุน (ถ้าขายตอนนี้)</div>
+        <div style="color:${pnl>=0?'var(--up)':'var(--dn)'};font-weight:700;font-size:15px">${(pnl>=0?'+':'')+fmtB(pnl)} <span style="font-size:11px">(${(pct>=0?'+':'')+pct.toFixed(1)}%)</span></div></div>`:''}
+    </div>`;
+}
+
+function confirmGold(){
+  const name=document.getElementById('gdName').value.trim()||(selectedGoldType==='jewel'?'ทองรูปพรรณ':selectedGoldType==='965'?'ทองแท่ง 96.5%':'ทองแท่ง 99.99%');
+  const amt=parseFloat(document.getElementById('gdAmt').value)||0;
+  const buyP=parseFloat(document.getElementById('gdBuyPrice').value)||0;
+  const making=parseFloat(document.getElementById('gdMaking')?.value)||0;
+  const date=document.getElementById('gdDate').value||new Date().toISOString().split('T')[0];
+  if(amt<=0||buyP<=0){alert('กรุณากรอกน้ำหนักและราคาที่ซื้อ');return;}
+  const totalCost=amt*(buyP+(selectedGoldType==='jewel'?making:0));
+  GOLD.push({
+    name, type:selectedGoldType, amt,
+    buyPrice:buyP, making:selectedGoldType==='jewel'?making:0,
+    cost:totalCost, date,
+    history:[{date,amt,buyPrice:buyP,making,total:totalCost}]
+  });
+  closeGold(); saveData(); renderTable();
+}
+function removeGold(i){if(confirm(`ลบ ${GOLD[i].name}?`)){GOLD.splice(i,1);saveData();renderTable();}}
+
+// ═══════════════════════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════════════════════
+let cdInterval,cdVal=60;
+function startCountdown(){
+  clearInterval(cdInterval);cdVal=60;
+  cdInterval=setInterval(()=>{
+    cdVal--;
+    document.getElementById('cdSec').textContent=cdVal+'s';
+    document.getElementById('cdFill').style.width=(cdVal/60*100)+'%';
+    if(cdVal<=0){clearInterval(cdInterval);fetchAll();}
+  },1000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FETCH
+// ═══════════════════════════════════════════════════════════
+async function fetchAll(){
+  const btn=document.getElementById('fetchBtn');
+  btn.disabled=true;btn.textContent='⟳ กำลังดึง...';
+  document.getElementById('errBox').style.display='none';
+  let ok=false;
+  try{
+    const syms=CRYPTO.filter(c=>c.bk).map(c=>c.bk).join(',');
+    const res=await fetch(`https://api.bitkub.com/api/v3/market/ticker?sym=${syms}`,{cache:'no-cache'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(Array.isArray(data.result)&&data.result.length>0){
+      data.result.forEach(item=>{if(item.sym&&item.last)prices[item.sym]=parseFloat(item.last);});
+      ok=true;
+    }else throw new Error('empty');
+  }catch(e1){
+    try{
+      const res2=await fetch('https://api.bitkub.com/api/market/ticker',{cache:'no-cache'});
+      const d2=await res2.json();
+      if(d2.result){Object.keys(d2.result).forEach(k=>{if(k in FALLBACK)prices[k]=parseFloat(d2.result[k].last)||FALLBACK[k];});ok=true;}
+    }catch(e2){
+      prices={...FALLBACK};
+      const eb=document.getElementById('errBox');
+      eb.style.display='block';
+      eb.textContent='⚠️ ดึงราคา Bitkub ไม่ได้ — ใช้ราคาอ้างอิง 25 เม.ย. 2026 (เปิดไฟล์ใน Chrome จะได้ราคาจริง)';
+    }
+  }
+  const dot=document.getElementById('liveDot'),lu=document.getElementById('lastUp');
+  if(ok){dot.classList.add('live');lu.textContent='Bitkub Live · '+new Date().toLocaleTimeString('th-TH');}
+  else{dot.classList.remove('live');lu.textContent='ราคาอ้างอิง 25 เม.ย. 2026';}
+  // ── Finnhub US Stocks + Gold ──
+  await fetchUsdThb();
+  await Promise.all([fetchStockPrices(), fetchGoldPrice()]);
+
+  checkTargets();
+  renderTable(); renderSellLog();
+  btn.disabled=false;btn.textContent='⟳ รีเฟรช';
+  startCountdown();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DONUT CHART
+// ═══════════════════════════════════════════════════════════
+function drawDonut(segments){
+  const canvas=document.getElementById('donutCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=68,r=40;
+  ctx.clearRect(0,0,W,H);
+  const total=segments.reduce((s,x)=>s+x.val,0);
+  if(total<=0)return;
+  let angle=-Math.PI/2;
+  segments.forEach(seg=>{
+    const sweep=(seg.val/total)*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,angle,angle+sweep);
+    ctx.closePath();
+    ctx.fillStyle=seg.color;
+    ctx.fill();
+    angle+=sweep;
+  });
+  // hole
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle='#13161e';
+  ctx.fill();
+  // center text
+  ctx.fillStyle='#e8eaf0';
+  ctx.font='bold 12px IBM Plex Mono, monospace';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(Math.round(total/1000)+'K', cx, cy-7);
+  ctx.fillStyle='#555f72';
+  ctx.font='9px IBM Plex Sans Thai, sans-serif';
+  ctx.fillText('THB', cx, cy+8);
+
+  // legend
+  const legend=document.getElementById('donutLegend');
+  legend.innerHTML=segments.map(s=>`
+    <div class="leg-item">
+      <div class="leg-label"><div class="leg-dot" style="background:${s.color}"></div>${s.label}</div>
+      <div class="leg-val">${(s.val/total*100).toFixed(1)}%</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PNL BAR CHART — Grouped overview + drill-down
+// ═══════════════════════════════════════════════════════════
+let pnlAllItems = [];
+let pnlFilter   = 'all'; // 'all' | 'crypto' | 'stock' | 'gold' | 'other'
+
+const CAT_META = {
+  crypto: { label:'🪙 Crypto', color:'#F7931A' },
+  stock:  { label:'📈 หุ้น',   color:'#fbbf24' },
+  gold:   { label:'🥇 ทอง',   color:'#FFD700' },
+  other:  { label:'🏠 อื่นๆ',  color:'#34d399' },
+};
+
+function buildPnLItems(){
+  const items=[];
+  CRYPTO.forEach(c=>{
+    const pnl=c.amt*(prices[c.bk]||0)-c.cost;
+    items.push({sym:c.sym, fullName:c.sym, pnl, color:c.color, cat:'crypto'});
+  });
+  STOCKS.forEach(s=>{
+    const pnl=s.amt*s.price-s.cost;
+    items.push({sym:s.sym, fullName:s.sym, pnl, color:'#fbbf24', cat:'stock'});
+  });
+  GOLD.forEach(g=>{
+    const purity={'9999':1.0,'965':0.965,'jewel':0.965}[g.type||'9999']||1.0;
+    const sellP=goldPricePerBaht>0?goldPricePerBaht*purity:g.buyPrice;
+    const pnl=g.amt*sellP-g.cost;
+    items.push({sym:g.name.slice(0,7), fullName:g.name, pnl, color:'#FFD700', cat:'gold'});
+  });
+  OTHERS.forEach(o=>{
+    const pnl=o.mktVal-o.cost;
+    items.push({sym:o.name.slice(0,7), fullName:o.name, pnl, color:o.color||'#34d399', cat:'other'});
+  });
+  return items;
+}
+
+// grouped = รวมเป็นกลุ่ม สำหรับ "ทั้งหมด"
+function buildGroupedItems(items){
+  const groups={};
+  items.forEach(it=>{
+    if(!groups[it.cat]) groups[it.cat]={sym:CAT_META[it.cat]?.label||it.cat, pnl:0, color:CAT_META[it.cat]?.color||'#60a5fa', cat:it.cat, count:0};
+    groups[it.cat].pnl+=it.pnl;
+    groups[it.cat].count++;
+  });
+  return Object.values(groups);
+}
+
+function renderPnLFilterBtns(){
+  const wrap=document.getElementById('pnlFilterBtns');
+  if(!wrap) return;
+  const activeCats=[...new Set(pnlAllItems.map(x=>x.cat))];
+
+  let html=`<button class="pnl-filter ${pnlFilter==='all'?'active':''}"
+    style="${pnlFilter==='all'?'background:#60a5fa;color:#000;':''}"
+    onclick="setPnlFilter('all')">ภาพรวม</button>`;
+
+  activeCats.forEach(cat=>{
+    const m=CAT_META[cat]||{label:cat,color:'#60a5fa'};
+    const isActive=pnlFilter===cat;
+    html+=`<button class="pnl-filter ${isActive?'active':''}"
+      style="${isActive?`background:${m.color};color:#000;`:''}"
+      onclick="setPnlFilter('${cat}')">${m.label}</button>`;
+  });
+  wrap.innerHTML=html;
+}
+
+function setPnlFilter(f){
+  pnlFilter=f;
+  redrawPnLChart();
+}
+
+function redrawPnLChart(){
+  renderPnLFilterBtns();
+
+  let chartItems, titleSuffix;
+  if(pnlFilter==='all'){
+    // ภาพรวม: แสดงแท่งกลุ่ม
+    chartItems=buildGroupedItems(pnlAllItems);
+    titleSuffix='';
+  } else {
+    // drill-down: แสดงรายตัวในกลุ่ม
+    chartItems=pnlAllItems.filter(x=>x.cat===pnlFilter);
+    titleSuffix=` — ${CAT_META[pnlFilter]?.label||pnlFilter}`;
+  }
+
+  // อัปเดต title
+  const titleEl=document.getElementById('pnlChartTitle');
+  if(titleEl){
+    titleEl.textContent = pnlFilter==='all'
+      ? 'กำไร/ขาดทุน — ภาพรวมกลุ่ม'
+      : `กำไร/ขาดทุน — ${CAT_META[pnlFilter]?.label||pnlFilter} รายตัว`;
+  }
+  drawPnLChart(chartItems, pnlFilter==='all');
+
+  // summary line
+  const sumEl=document.getElementById('pnlSummary');
+  if(sumEl&&chartItems.length){
+    const total=chartItems.reduce((s,x)=>s+x.pnl,0);
+    const pos=chartItems.filter(x=>x.pnl>=0).length;
+    const neg=chartItems.filter(x=>x.pnl<0).length;
+    const modeLabel=pnlFilter==='all'?`${chartItems.length} กลุ่ม (${pnlAllItems.length} รายการ)`:`${chartItems.length} รายการ`;
+    sumEl.innerHTML=`<span style="color:var(--text3)">${modeLabel} · กำไร ${pos} · ขาดทุน ${neg} · รวม </span><span style="color:${total>=0?'var(--up)':'var(--dn)'};font-weight:600">${total>=0?'+':''}฿${Math.round(total).toLocaleString('th-TH')}</span>`;
+  } else if(sumEl){ sumEl.textContent=''; }
+}
+
+function drawPnLChart(items, isGrouped=false){
+  const canvas=document.getElementById('pnlCanvas');
+  const parent=canvas.parentElement;
+  canvas.width=parent.clientWidth-28;
+  canvas.height=155;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(!items.length){
+    ctx.fillStyle='#555f72';ctx.font='11px IBM Plex Sans Thai,sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('ไม่มีข้อมูล',canvas.width/2,canvas.height/2);
+    return;
+  }
+
+  const W=canvas.width, H=canvas.height;
+  const pad={l:8,r:8,t:22,b:32};
+  const maxAbs=Math.max(...items.map(x=>Math.abs(x.pnl)),1);
+  // แท่งกลุ่มกว้างกว่า แต่รายตัวอาจมีเยอะ
+  const maxBw = isGrouped ? 72 : 52;
+  const bw=Math.max(10, Math.min(maxBw, (W-pad.l-pad.r)/items.length-8));
+  const totalW=items.length*(bw+8)-8;
+  const startX=pad.l+(W-pad.l-pad.r-totalW)/2;
+  const midY=pad.t+(H-pad.t-pad.b)/2;
+  const halfH=(H-pad.t-pad.b)/2-4;
+
+  // zero line
+  ctx.strokeStyle='#ffffff18'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l,midY); ctx.lineTo(W-pad.r,midY); ctx.stroke();
+
+  // แกน +/- label
+  ctx.fillStyle='#555f72'; ctx.font='8px IBM Plex Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText('+', pad.l, pad.t+2);
+  ctx.fillText('−', pad.l, H-pad.b-2);
+
+  items.forEach((it,i)=>{
+    const x=startX+i*(bw+8);
+    const barH=Math.max(3,(Math.abs(it.pnl)/maxAbs)*halfH);
+    const isUp=it.pnl>=0;
+    const y=isUp?midY-barH:midY;
+    const col=it.color||'#60a5fa';
+
+    // shadow glow
+    ctx.shadowColor=col; ctx.shadowBlur=isGrouped?8:4;
+
+    // bar gradient
+    const grad=ctx.createLinearGradient(0,y,0,y+barH);
+    if(isUp){ grad.addColorStop(0,col); grad.addColorStop(1,col+'55'); }
+    else    { grad.addColorStop(0,col+'55'); grad.addColorStop(1,col); }
+    ctx.fillStyle=grad;
+    ctx.beginPath(); ctx.roundRect(x,y,bw,barH,5); ctx.fill();
+    ctx.shadowBlur=0;
+
+    // count badge (grouped mode)
+    if(isGrouped&&it.count>1){
+      ctx.fillStyle='#ffffff30';
+      ctx.beginPath(); ctx.roundRect(x+bw-14,y+(isUp?2:-14),14,12,3); ctx.fill();
+      ctx.fillStyle='#e8eaf0'; ctx.font='7px IBM Plex Mono,monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(it.count, x+bw-7, y+(isUp?8:-8));
+    }
+
+    // symbol label (bottom)
+    const fontSize=Math.min(10, Math.max(8, bw/5+5));
+    ctx.fillStyle='#8892a4'; ctx.font=`${fontSize}px IBM Plex Mono,monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    // wrap text ถ้า isGrouped
+    const labelText = isGrouped ? it.sym.replace(/^[^\s]+\s/,'') : it.sym.slice(0,6);
+    ctx.fillText(labelText, x+bw/2, H-pad.b+4);
+
+    // value label (top of bar)
+    const absV=Math.abs(it.pnl);
+    const vText=(it.pnl>=0?'+':'-')+(
+      absV>=1000000 ? (absV/1000000).toFixed(1)+'M' :
+      absV>=1000    ? Math.round(absV/1000)+'K'     :
+                      Math.round(absV).toString()
+    );
+    ctx.fillStyle=isUp?'#34d399':'#f87171';
+    ctx.font=`bold ${Math.min(9,fontSize)}px IBM Plex Mono,monospace`;
+    ctx.textBaseline=isUp?'bottom':'top';
+    ctx.fillText(vText, x+bw/2, isUp?midY-barH-2:midY+barH+2);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER TABLE
+// ═══════════════════════════════════════════════════════════
+function renderTable(){
+  let cVal=0,cCost=0; CRYPTO.forEach(c=>{cVal+=c.amt*(prices[c.bk]||0);cCost+=c.cost;});
+  let sVal=0,sCost=0; STOCKS.forEach(s=>{sVal+=s.amt*s.price;sCost+=s.cost;});
+  let oAsset=0,oDebt=0,oCost=0; OTHERS.forEach(o=>{oAsset+=o.mktVal;oDebt+=o.debt;oCost+=o.cost;});
+  let gVal=0,gCost=0;
+  GOLD.forEach(g=>{
+    const purity={'9999':1.0,'965':0.965,'jewel':0.965}[g.type||'9999']||1.0;
+    const sellP=goldPricePerBaht>0?goldPricePerBaht*purity:g.buyPrice;
+    gVal+=g.amt*sellP; gCost+=g.cost;
+  });
+  const oEquity=oAsset-oDebt;
+  const totalAsset=cVal+sVal+oAsset+gVal;
+  const totalDebt=oDebt;
+  const netWorth=cVal+sVal+oEquity+gVal;
+  const invested=cCost+sCost+oCost+gCost;
+  const cPnL=cVal-cCost,cPct=cCost>0?cPnL/cCost*100:0;
+  const sPnL=sVal-sCost,sPct=sCost>0?sPnL/sCost*100:0;
+  const gPnL=gVal-gCost,gPct=gCost>0?gPnL/gCost*100:0;
+  const nwPct=invested>0?(netWorth-invested)/invested*100:0;
+  const realizedPnL=SELL_LOG.reduce((s,x)=>s+x.pnl,0);
+
+  document.getElementById('kA').textContent=fmtB(totalAsset);
+  document.getElementById('kD').textContent=fmtB(totalDebt);
+  const ne=document.getElementById('kN');ne.textContent=fmtB(netWorth);ne.style.color=netWorth>=0?'var(--up)':'var(--dn)';
+  document.getElementById('kNp').textContent=(nwPct>=0?'+':'')+nwPct.toFixed(1)+'% vs ทุน';
+  const ce=document.getElementById('kC');ce.textContent=(cPnL>=0?'+':'')+fmtB(cPnL);ce.style.color=cPnL>=0?'var(--up)':'var(--dn)';
+  document.getElementById('kCp').textContent=(cPct>=0?'+':'')+cPct.toFixed(1)+'%';
+  const se=document.getElementById('kS');se.textContent=(sPnL>=0?'+':'')+fmtB(sPnL);se.style.color=sPnL>=0?'var(--up)':'var(--dn)';
+  document.getElementById('kSp').textContent=(sPct>=0?'+':'')+sPct.toFixed(1)+'%';
+  const re=document.getElementById('kR');re.textContent=(realizedPnL>=0?'+':'')+fmtB(realizedPnL);re.style.color=realizedPnL>=0?'var(--up)':'var(--dn)';
+  const ge=document.getElementById('kG');ge.textContent=(gPnL>=0?'+':'')+fmtB(gPnL);ge.style.color=gPnL>=0?'var(--up)':'var(--dn)';
+  document.getElementById('kGp').textContent=goldPricePerBaht>0?((gPct>=0?'+':'')+gPct.toFixed(1)+'%'):'รอราคา Live';
+
+  let rows='';
+
+  // ── Crypto
+  rows+=`<tr class="sec-row"><td colspan="11">🪙 Crypto — Bitkub Live</td>
+    <td style="text-align:right"><button class="btn-sm" onclick="openAdd('crypto')">+ เพิ่ม</button></td></tr>`;
+  CRYPTO.forEach((c,i)=>{
+    const p=prices[c.bk]||0,val=c.amt*p,pnl=val-c.cost;
+    const pct=c.cost>0?pnl/c.cost*100:0,wt=netWorth>0?val/netWorth*100:0,avg=c.amt>0?c.cost/c.amt:0;
+    // target chip
+    let tChip='';
+    if(c.tp||c.sl){
+      const tpHit=c.tp&&p>=c.tp,slHit=c.sl&&p<=c.sl;
+      tChip=`<span class="target-chip ${tpHit?'hit-up':slHit?'hit-dn':'set'}" onclick="openTarget('crypto',${i})" title="TP:${c.tp||'—'} / SL:${c.sl||'—'}">
+        ${c.tp?'TP:'+fmtP(c.tp):''}${c.tp&&c.sl?' · ':''}${c.sl?'SL:'+fmtP(c.sl):''}
+      </span>`;
+    } else {
+      tChip=`<span class="target-chip none" onclick="openTarget('crypto',${i})">+ เป้า</span>`;
+    }
+    rows+=`<tr>
+      <td><span class="sym-ico" style="background:${c.color}22;color:${c.color}">${c.sym.slice(0,3)}</span></td>
+      <td><strong>${c.sym}</strong><button class="hist-btn" onclick="openHist('crypto',${i})">ประวัติ (${c.history.length})</button></td>
+      <td style="color:${c.color}">${p>0?fmtP(p):'—'}</td>
+      <td><input class="inp-e" type="number" value="${fmtN(c.amt)}" step="any" onchange="CRYPTO[${i}].amt=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td style="color:var(--text3)">${fmtB(avg)}</td>
+      <td><input class="inp-e" type="number" value="${c.cost.toFixed(2)}" step="0.01" onchange="CRYPTO[${i}].cost=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td><strong>${fmtB(val)}</strong></td>
+      <td style="color:var(--text3)">—</td>
+      <td>${badge(pnl)}<br><small style="color:var(--text3)">${badgePct(pct)}</small></td>
+      <td style="color:var(--text3)">${wt.toFixed(1)}%</td>
+      <td>${tChip}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn-buy" onclick="openTrade('crypto',${i})">⇄</button>
+        <button class="btn-del" onclick="removeCrypto(${i})">✕</button></td>
+    </tr>`;
+  });
+  const cpnl=cVal-cCost,cpct=cCost>0?cpnl/cCost*100:0;
+  rows+=`<tr class="tot-row">
+    <td colspan="5" style="color:var(--text3);font-size:10px;text-align:right">รวม Crypto</td>
+    <td>${fmtB(cCost)}</td><td>${fmtB(cVal)}</td><td>—</td>
+    <td>${badge(cpnl)}</td><td colspan="3"></td></tr>`;
+
+  // ── Stocks
+  rows+=`<tr class="sec-row"><td colspan="11">📈 หุ้น — 🇺🇸 US Finnhub 60s · 🇹🇭 TH Alpha Vantage · ✏️ Manual</td>
+    <td style="text-align:right"><button class="btn-sm" onclick="openAdd('stock')">+ เพิ่ม</button></td></tr>`;
+  STOCKS.forEach((s,i)=>{
+    const val=s.amt*s.price,pnl=val-s.cost;
+    const pct=s.cost>0?pnl/s.cost*100:0,wt=netWorth>0?val/netWorth*100:0,avg=s.amt>0?s.cost/s.amt:0;
+    const ex=s.exchange||'US';
+    const exBadge=ex==='TH'
+      ?`<span style="font-size:9px;background:#34d39915;color:var(--up);border:1px solid #34d39930;border-radius:3px;padding:0 4px;margin-left:4px">🇹🇭 SET</span>`
+      :ex==='MANUAL'
+      ?`<span style="font-size:9px;background:#fbbf2415;color:var(--warn);border:1px solid #fbbf2430;border-radius:3px;padding:0 4px;margin-left:4px">✏️</span>`
+      :`<span style="font-size:9px;background:#60a5fa15;color:var(--blue);border:1px solid #60a5fa30;border-radius:3px;padding:0 4px;margin-left:4px">🇺🇸 US</span>`;
+    // price display — US Live / TH Live (AV) / MANUAL กรอกเอง
+    let priceDisplay;
+    const liveP=stockPrices[s.sym];
+    if(ex==='US' && liveP){
+      priceDisplay=`<span style="color:var(--warn)">${liveP.toFixed(2)}</span><span style="color:var(--text3);font-size:10px"> USD</span>`;
+    } else if(ex==='TH' && liveP){
+      priceDisplay=`<span style="color:var(--up)">${liveP.toFixed(2)}</span><span style="color:var(--text3);font-size:10px"> ฿</span>`;
+    } else {
+      priceDisplay=`<input class="inp-e" type="number" value="${s.price}" step="0.01" onchange="STOCKS[${i}].price=parseFloat(this.value)||0;saveData();renderTable()"/>`;
+    }
+    let tChip='';
+    if(s.tp||s.sl){
+      const tpHit=s.tp&&s.price>=s.tp,slHit=s.sl&&s.price<=s.sl;
+      tChip=`<span class="target-chip ${tpHit?'hit-up':slHit?'hit-dn':'set'}" onclick="openTarget('stock',${i})">
+        ${s.tp?'TP:'+fmtP(s.tp):''}${s.tp&&s.sl?' · ':''}${s.sl?'SL:'+fmtP(s.sl):''}
+      </span>`;
+    } else {
+      tChip=`<span class="target-chip none" onclick="openTarget('stock',${i})">+ เป้า</span>`;
+    }
+    rows+=`<tr>
+      <td><span class="sym-ico" style="background:${ex==='TH'?'#34d39922':ex==='MANUAL'?'#fbbf2422':'#60a5fa22'};color:${ex==='TH'?'var(--up)':ex==='MANUAL'?'var(--warn)':'var(--blue)'}">${s.sym.slice(0,3)}</span></td>
+      <td><strong>${s.sym}</strong>${exBadge}<button class="hist-btn" onclick="openHist('stock',${i})">ประวัติ (${s.history.length})</button></td>
+      <td>${priceDisplay}</td>
+      <td><input class="inp-e" type="number" value="${fmtN(s.amt)}" step="any" onchange="STOCKS[${i}].amt=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td style="color:var(--text3)">${fmtB(avg)}</td>
+      <td><input class="inp-e" type="number" value="${s.cost.toFixed(2)}" step="0.01" onchange="STOCKS[${i}].cost=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td><strong>${fmtB(val)}</strong></td>
+      <td style="color:var(--text3)">—</td>
+      <td>${badge(pnl)}<br><small style="color:var(--text3)">${badgePct(pct)}</small></td>
+      <td style="color:var(--text3)">${wt.toFixed(1)}%</td>
+      <td>${tChip}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn-buy" onclick="openTrade('stock',${i})">⇄</button>
+        <button class="btn-del" onclick="removeStock(${i})">✕</button></td>
+    </tr>`;
+  });
+  const spnl=sVal-sCost;
+  rows+=`<tr class="tot-row">
+    <td colspan="5" style="color:var(--text3);font-size:10px;text-align:right">รวม หุ้น</td>
+    <td>${fmtB(sCost)}</td><td>${fmtB(sVal)}</td><td>—</td>
+    <td>${badge(spnl)}</td><td colspan="3"></td></tr>`;
+
+  // ── Gold
+  rows+=`<tr class="sec-row"><td colspan="11">🥇 ทองคำ — Live · 🟡 99.99% · 🟠 96.5% · 💍 รูปพรรณ</td>
+    <td style="text-align:right"><button class="btn-sm" onclick="openGold()">+ เพิ่ม</button></td></tr>`;
+  if(GOLD.length===0){
+    rows+=`<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:14px;font-size:11px">ยังไม่มีทองคำ — กด "+ เพิ่ม" เพื่อบันทึก</td></tr>`;
+  }
+  GOLD.forEach((g,i)=>{
+    const gtype=g.type||'9999';
+    const purity={'9999':1.0,'965':0.965,'jewel':0.965}[gtype]||1.0;
+    const sellPricePerBaht=goldPricePerBaht>0?goldPricePerBaht*purity:0;
+    const curP=sellPricePerBaht>0?sellPricePerBaht:g.buyPrice;
+    const val=g.amt*curP, pnl=val-g.cost;
+    const pct=g.cost>0?pnl/g.cost*100:0, wt=netWorth>0?val/netWorth*100:0;
+    const avgBuy=g.amt>0?g.cost/g.amt:0;
+    const typeIcon={'9999':'🟡','965':'🟠','jewel':'💍'}[gtype]||'🥇';
+    const typeLabel={'9999':'99.99%','965':'96.5%','jewel':'รูปพรรณ'}[gtype]||'';
+    const liveTag=sellPricePerBaht>0
+      ?`<span style="color:#FFD700">${Math.round(sellPricePerBaht).toLocaleString('th-TH')}</span><span style="color:var(--text3);font-size:10px"> ฿</span>`
+      :`<span style="color:var(--text3);font-size:10px">รอ Live...</span>`;
+    const makingNote=gtype==='jewel'&&g.making>0
+      ?`<span style="font-size:9px;color:var(--warn)"> กำเหน็จ ฿${g.making}/บาท</span>`:'';
+    rows+=`<tr style="background:#FFD70006">
+      <td><span class="sym-ico" style="background:#FFD70022;color:#FFD700;font-size:13px">${typeIcon}</span></td>
+      <td>
+        <strong>${g.name}</strong>
+        <span style="font-size:9px;background:#FFD70015;color:#FFD700;border:1px solid #FFD70030;border-radius:3px;padding:0 4px;margin-left:3px">${typeLabel}</span>
+        ${makingNote}
+        <button class="hist-btn" style="display:inline" onclick="">ซื้อ ${g.date}</button>
+      </td>
+      <td>${liveTag}</td>
+      <td><input class="inp-e" type="number" value="${g.amt}" step="0.001" onchange="GOLD[${i}].amt=parseFloat(this.value)||0;GOLD[${i}].cost=GOLD[${i}].amt*(GOLD[${i}].buyPrice+(GOLD[${i}].making||0));saveData();renderTable()"/></td>
+      <td style="color:var(--text3)">${fmtB(avgBuy)}</td>
+      <td><input class="inp-e" type="number" value="${g.cost.toFixed(2)}" step="0.01" onchange="GOLD[${i}].cost=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td><strong>${fmtB(val)}</strong></td>
+      <td style="color:var(--text3)">—</td>
+      <td>${badge(pnl)}<br><small style="color:var(--text3)">${badgePct(pct)}</small></td>
+      <td style="color:var(--text3)">${wt.toFixed(1)}%</td>
+      <td>—</td>
+      <td style="text-align:right"><button class="btn-del" onclick="removeGold(${i})">✕</button></td>
+    </tr>`;
+  });
+  if(GOLD.length>0){
+    rows+=`<tr class="tot-row">
+      <td colspan="5" style="color:var(--text3);font-size:10px;text-align:right">รวม ทองคำ</td>
+      <td>${fmtB(gCost)}</td><td>${fmtB(gVal)}</td><td>—</td>
+      <td>${badge(gPnL)}</td><td colspan="3"></td></tr>`;
+  }
+
+  // ── Others
+  rows+=`<tr class="sec-row"><td colspan="11">🏠 สินทรัพย์อื่นๆ — มูลค่าตลาด / หนี้ผูกติด / Equity</td>
+    <td style="text-align:right"><button class="btn-sm" onclick="openOther()">+ เพิ่ม</button></td></tr>`;
+  OTHERS.forEach((o,i)=>{
+    const equity=o.mktVal-o.debt, pnl=o.mktVal-o.cost;
+    const pct=o.cost>0?pnl/o.cost*100:0, wt=netWorth>0?equity/netWorth*100:0;
+    rows+=`<tr style="background:${o.color}08">
+      <td><span class="sym-ico" style="background:${o.color}22;color:${o.color};font-size:14px">${o.icon}</span></td>
+      <td><strong>${o.name}</strong></td>
+      <td style="color:var(--text3)">—</td>
+      <td style="color:var(--text3)">—</td>
+      <td style="color:var(--text3)">—</td>
+      <td><input class="inp-e" type="number" value="${o.cost}" step="0.01" onchange="OTHERS[${i}].cost=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td><input class="inp-e" type="number" value="${o.mktVal}" step="0.01" style="color:var(--up)" onchange="OTHERS[${i}].mktVal=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td><input class="inp-e" type="number" value="${o.debt}" step="0.01" style="color:var(--dn)" onchange="OTHERS[${i}].debt=parseFloat(this.value)||0;saveData();renderTable()"/></td>
+      <td>
+        <span style="color:${equity>=0?'var(--up)':'var(--dn)'};font-weight:600">${fmtB(equity)}</span><br>
+        <small style="color:var(--text3)">${badge(pnl)}</small>
+      </td>
+      <td style="color:var(--text3)">${wt.toFixed(1)}%</td>
+      <td>—</td>
+      <td style="text-align:right"><button class="btn-del" onclick="removeOther(${i})">✕</button></td>
+    </tr>`;
+  });
+  rows+=`<tr class="tot-row">
+    <td colspan="5" style="color:var(--text3);font-size:10px;text-align:right">รวม สินทรัพย์อื่นๆ</td>
+    <td>${fmtB(oCost)}</td><td>${fmtB(oAsset)}</td>
+    <td style="color:var(--dn)">−${fmtB(oDebt)}</td>
+    <td style="color:var(--up);font-weight:700">${fmtB(oEquity)}</td>
+    <td colspan="3"></td></tr>`;
+
+  // ── Net Worth
+  rows+=`<tr><td colspan="12" style="padding:0;border-top:1px solid var(--border2)"></td></tr>`;
+  rows+=`<tr class="tot-row">
+    <td colspan="5" style="color:var(--text3);font-size:10px;text-align:right">สินทรัพย์รวม (Asset)</td>
+    <td colspan="4">${fmtB(totalAsset)}</td><td colspan="3"></td></tr>`;
+  rows+=`<tr class="tot-row">
+    <td colspan="5" style="color:var(--dn);font-size:10px;text-align:right">หนี้สินรวม (Liability)</td>
+    <td colspan="4" style="color:var(--dn)">−${fmtB(totalDebt)}</td><td colspan="3"></td></tr>`;
+  const nwBg=netWorth>=0?'#34d39912':'#f8717112',nwCol=netWorth>=0?'var(--up)':'var(--dn)';
+  rows+=`<tr class="nw-row" style="background:${nwBg}">
+    <td colspan="5" style="font-family:'IBM Plex Sans Thai',sans-serif">💎 Net Worth จริง</td>
+    <td colspan="4" style="font-size:18px;color:${nwCol}">${fmtB(netWorth)}</td>
+    <td>${badge(netWorth-invested)} ${badgePct(nwPct)}</td>
+    <td colspan="2" style="color:var(--text3);font-size:10px;text-align:left">Asset − Liability</td></tr>`;
+
+  document.getElementById('tbody').innerHTML=rows;
+
+  // Charts
+  const donutSegs=[
+    {label:'Crypto',          val:cVal,              color:'#F7931A'},
+    {label:'หุ้น',             val:sVal,              color:'#fbbf24'},
+    {label:'🥇 ทองคำ',        val:gVal,              color:'#FFD700'},
+    {label:'อื่นๆ (Equity)',   val:oEquity>0?oEquity:0, color:'#34d399'},
+  ].filter(s=>s.val>0);
+  drawDonut(donutSegs);
+
+  pnlAllItems = buildPnLItems();
+  redrawPnLChart();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SETTINGS / API KEY MODAL
+// ═══════════════════════════════════════════════════════════
+function getAlphaVantageKey(){ return localStorage.getItem('alphavantage_api_key')||''; }
+let AV_KEY = getAlphaVantageKey();
+let thStockInterval = null; // timer สำหรับ refresh หุ้นไทย
+let avLastFetch = 0;
+
+function openSettings(){
+  const fhk=getFinnhubKey(), avk=getAlphaVantageKey();
+  document.getElementById('settingsFhKey').value=fhk;
+  document.getElementById('settingsFhKey').type='password';
+  document.getElementById('eyeBtn').textContent='👁';
+  document.getElementById('settingsAvKey').value=avk;
+  document.getElementById('settingsAvKey').type='password';
+  document.getElementById('eyeBtnAv').textContent='👁';
+  updateKeyStatusDisplay(fhk);
+  updateAvKeyStatusDisplay(avk);
+  updateAvIntervalHint();
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('show'); }
+
+function toggleKeyVisibility(inputId, btnId){
+  const inp=document.getElementById(inputId);
+  const btn=document.getElementById(btnId);
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
+  else { inp.type='password'; btn.textContent='👁'; }
+}
+
+function updateKeyStatusDisplay(key){
+  const el=document.getElementById('fhKeyStatus');
+  if(!key){ el.className='key-status none'; el.textContent='ยังไม่มี Key — ราคาหุ้น US / ทอง จะต้องกรอกเอง'; return; }
+  const masked=key.slice(0,6)+'••••••'+key.slice(-4);
+  el.className='key-status ok'; el.textContent=`✅ Finnhub Key: ${masked}`;
+}
+function updateAvKeyStatusDisplay(key){
+  const el=document.getElementById('avKeyStatus');
+  if(!key){ el.className='key-status none'; el.textContent='ยังไม่มี Key — ราคาหุ้นไทยจะต้องกรอกเอง'; return; }
+  const masked=key.slice(0,4)+'••••••'+key.slice(-4);
+  el.className='key-status ok'; el.textContent=`✅ Alpha Vantage Key: ${masked}`;
+}
+
+// คำนวณ interval อัตโนมัติตามจำนวนหุ้นไทย
+function calcThInterval(){
+  const n=STOCKS.filter(s=>s.exchange==='TH').length;
+  if(n===0) return 0;
+  // 25 req/วัน, สมมติ 8 ชม.ใช้งาน
+  // interval = ceil(n * 8 * 60 / 24) นาที, min 30 นาที
+  const intervalMin = Math.max(30, Math.ceil(n * 8 * 60 / 24));
+  return intervalMin;
+}
+function updateAvIntervalHint(){
+  const el=document.getElementById('avIntervalHint');
+  if(!el) return;
+  const n=STOCKS.filter(s=>s.exchange==='TH').length;
+  if(n===0){ el.textContent='ยังไม่มีหุ้นไทยในพอร์ต'; return; }
+  const intv=calcThInterval();
+  const reqPerDay=Math.floor(8*60/intv)*n;
+  el.textContent=`📊 หุ้นไทย ${n} ตัว → refresh ทุก ${intv} นาที → ใช้ ~${reqPerDay} req/วัน (limit 25)`;
+}
+
+function saveAllKeys(){
+  // Finnhub
+  const fhk=document.getElementById('settingsFhKey').value.trim();
+  if(fhk){ localStorage.setItem('finnhub_api_key', fhk); FINNHUB_KEY=fhk; }
+  updateKeyStatusDisplay(fhk);
+  // Alpha Vantage
+  const avk=document.getElementById('settingsAvKey').value.trim();
+  if(avk){ localStorage.setItem('alphavantage_api_key', avk); AV_KEY=avk; }
+  updateAvKeyStatusDisplay(avk);
+  updateHeaderKeyStatus();
+  showToast('🔑 บันทึก API Keys แล้ว!');
+  closeSettings();
+  fetchAll();
+  startThStockTimer();
+}
+function saveFinnhubKey(){ saveAllKeys(); } // backward compat
+
+function clearFinnhubKey(){
+  if(!confirm('ลบ Finnhub API Key?')) return;
+  localStorage.removeItem('finnhub_api_key');
+  FINNHUB_KEY='';
+  document.getElementById('settingsFhKey').value='';
+  updateKeyStatusDisplay('');
+  updateHeaderKeyStatus();
+  showToast('🗑 ลบ Finnhub Key แล้ว');
+}
+function clearAlphaVantageKey(){
+  if(!confirm('ลบ Alpha Vantage API Key?')) return;
+  localStorage.removeItem('alphavantage_api_key');
+  AV_KEY='';
+  document.getElementById('settingsAvKey').value='';
+  updateAvKeyStatusDisplay('');
+  showToast('🗑 ลบ Alpha Vantage Key แล้ว');
+  clearInterval(thStockInterval);
+}
+
+async function testFinnhubKey(){
+  const k=document.getElementById('settingsFhKey').value.trim();
+  const el=document.getElementById('fhKeyStatus');
+  if(!k){ el.className='key-status err'; el.textContent='⚠️ กรุณากรอก Key ก่อน'; return; }
+  el.className='key-status none'; el.textContent='🔄 กำลังทดสอบ...';
+  try{
+    const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=AAPL&token=${k}`);
+    const d=await r.json();
+    if(d&&d.c&&d.c>0){ el.className='key-status ok'; el.textContent=`✅ Finnhub ใช้ได้! (AAPL = $${d.c})`; }
+    else { el.className='key-status err'; el.textContent='❌ Key ไม่ถูกต้อง'; }
+  }catch(e){ el.className='key-status err'; el.textContent='❌ เชื่อมต่อไม่ได้: '+e.message; }
+}
+async function testAlphaVantageKey(){
+  const k=document.getElementById('settingsAvKey').value.trim();
+  const el=document.getElementById('avKeyStatus');
+  if(!k){ el.className='key-status err'; el.textContent='⚠️ กรุณากรอก Key ก่อน'; return; }
+  el.className='key-status none'; el.textContent='🔄 กำลังทดสอบด้วย PTT.BK...';
+  try{
+    const r=await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=PTT.BK&apikey=${k}`);
+    const d=await r.json();
+    if(d['Global Quote']&&d['Global Quote']['05. price']){
+      const p=d['Global Quote']['05. price'];
+      el.className='key-status ok'; el.textContent=`✅ Alpha Vantage ใช้ได้! (PTT.BK = ฿${parseFloat(p).toFixed(2)})`;
+    } else if(d.Note){ el.className='key-status err'; el.textContent='⚠️ เกิน rate limit — ลองอีกทีใน 1 นาที'; }
+    else { el.className='key-status err'; el.textContent='❌ Key ไม่ถูกต้อง หรือ symbol ไม่พบ'; }
+  }catch(e){ el.className='key-status err'; el.textContent='❌ เชื่อมต่อไม่ได้: '+e.message; }
+}
+
+function updateHeaderKeyStatus(){
+  const fhk=getFinnhubKey(), avk=getAlphaVantageKey();
+  const el=document.getElementById('stockStatus');
+  if(!el) return;
+  const parts=[];
+  if(!fhk) parts.push('⚙️ Finnhub: ยังไม่มี Key');
+  if(!avk && STOCKS.some(s=>s.exchange==='TH')) parts.push('⚙️ AV: ยังไม่มี Key');
+  if(parts.length) { el.textContent=parts.join(' · ') + ' — กด API Key เพื่อตั้งค่า'; el.style.color='var(--warn)'; }
+  else { el.textContent='📈 พร้อมดึงราคา...'; el.style.color='var(--text3)'; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALPHA VANTAGE — ดึงราคาหุ้นไทย
+// ═══════════════════════════════════════════════════════════
+async function fetchThaiStockPrices(){
+  AV_KEY=getAlphaVantageKey();
+  const thStocks=STOCKS.filter(s=>s.exchange==='TH');
+  const statusEl=document.getElementById('thStockStatus');
+  if(!thStocks.length){
+    if(statusEl){statusEl.textContent='';} 
+    return;
+  }
+  if(!AV_KEY){
+    if(statusEl){statusEl.textContent='🇹🇭 หุ้นไทย: ต้องใส่ Alpha Vantage Key ใน ⚙️ ก่อน';statusEl.style.color='var(--warn)';}
+    return;
+  }
+  if(statusEl){statusEl.textContent=`🇹🇭 หุ้นไทย: กำลังดึง ${thStocks.length} ตัว...`;statusEl.style.color='var(--text3)';}
+  let okCount=0, failCount=0, rateLimited=false, lastErr='';
+  for(let si=0; si<thStocks.length; si++){
+    const s=thStocks[si];
+    const sym=s.finnhubSym||(s.sym+'.BK');
+    try{
+      const url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}&apikey=${AV_KEY}`;
+      const r=await fetch(url);
+      const d=await r.json();
+      if(d['Global Quote']&&d['Global Quote']['05. price']){
+        const p=parseFloat(d['Global Quote']['05. price']);
+        if(p>0){
+          const idx=STOCKS.findIndex(x=>x.sym===s.sym&&x.exchange==='TH');
+          if(idx>=0){
+            stockPrices[s.sym]=p;
+            STOCKS[idx].price=parseFloat(p.toFixed(2));
+          }
+          okCount++;
+        } else failCount++;
+      } else if(d['Note']||d['Information']){
+        // rate limit hit
+        rateLimited=true;
+        if(statusEl){statusEl.textContent=`🇹🇭 หุ้นไทย: เกิน rate limit (25 req/วัน) — รอพรุ่งนี้ หรือ refresh มือ`;statusEl.style.color='var(--warn)';}
+        break;
+      } else {
+        failCount++;
+      }
+    }catch(e){ failCount++; lastErr=e.message; }
+    // delay 2s ระหว่าง request เพื่อไม่ให้โดน throttle
+    if(si<thStocks.length-1) await new Promise(r=>setTimeout(r,2000));
+  }
+  avLastFetch=Date.now();
+  if(!rateLimited && statusEl){
+    const intv=calcThInterval();
+    const nextRefresh=new Date(Date.now()+intv*60000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    if(okCount>0 && failCount===0){
+      statusEl.textContent=`🇹🇭 หุ้นไทย Live ×${thStocks.length} · ${new Date().toLocaleTimeString('th-TH')} · ถัดไป ~${nextRefresh}`;
+      statusEl.style.color='var(--up)';
+    } else if(okCount>0){
+      statusEl.textContent=`🇹🇭 หุ้นไทย: ดึงได้ ${okCount}/${thStocks.length} · ถัดไป ~${nextRefresh}`;
+      statusEl.style.color='var(--warn)';
+    } else {
+      statusEl.textContent=`🇹🇭 หุ้นไทย: ดึงไม่ได้ — ${lastErr||'response ว่าง'} — ลอง ⚙️ ทดสอบ Key`;
+      statusEl.style.color='var(--dn)';
+    }
+  }
+  if(okCount>0){ saveData(); renderTable(); }
+}
+
+function startThStockTimer(){
+  clearInterval(thStockInterval);
+  const n=STOCKS.filter(s=>s.exchange==='TH').length;
+  if(n===0 || !getAlphaVantageKey()) return;
+  const intv=calcThInterval();
+  // fetch ทันที
+  fetchThaiStockPrices();
+  // ตั้ง interval
+  thStockInterval=setInterval(()=>fetchThaiStockPrices(), intv*60*1000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════
+function exportJSON(){
+  const data={crypto:CRYPTO,stocks:STOCKS,others:OTHERS,sellLog:SELL_LOG,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`portfolio_backup_${new Date().toISOString().split('T')[0]}.json`;a.click();
+}
+function exportCSV(){
+  let csv='Type,Symbol,Amount,AvgCost,TotalCost,CurrentPrice,Value,PnL,PnL%\n';
+  CRYPTO.forEach(c=>{
+    const p=prices[c.bk]||0,val=c.amt*p,pnl=val-c.cost,avg=c.amt>0?c.cost/c.amt:0,pct=c.cost>0?pnl/c.cost*100:0;
+    csv+=`Crypto,${c.sym},${c.amt},${avg.toFixed(2)},${c.cost.toFixed(2)},${p},${val.toFixed(2)},${pnl.toFixed(2)},${pct.toFixed(2)}%\n`;
+  });
+  STOCKS.forEach(s=>{
+    const val=s.amt*s.price,pnl=val-s.cost,avg=s.amt>0?s.cost/s.amt:0,pct=s.cost>0?pnl/s.cost*100:0;
+    csv+=`Stock,${s.sym},${s.amt},${avg.toFixed(2)},${s.cost.toFixed(2)},${s.price},${val.toFixed(2)},${pnl.toFixed(2)},${pct.toFixed(2)}%\n`;
+  });
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`portfolio_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+}
+function importJSON(){document.getElementById('importFile').click();}
+function handleImport(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.crypto) CRYPTO.length=0,data.crypto.forEach(c=>CRYPTO.push({tp:null,sl:null,...c}));
+      if(data.stocks) STOCKS.length=0,data.stocks.forEach(s=>STOCKS.push({tp:null,sl:null,...s}));
+      if(data.others) OTHERS.length=0,data.others.forEach(o=>OTHERS.push({...o}));
+      if(data.sellLog) SELL_LOG.length=0,data.sellLog.forEach(x=>SELL_LOG.push({...x}));
+      saveData(); fetchAll(); renderSellLog();
+      showToast('✅ Import สำเร็จ!');
+    }catch(err){alert('ไฟล์ JSON ไม่ถูกต้อง: '+err.message);}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ═══════════════════════════════════════════════════════════
+// WELCOME SCREEN (แสดงครั้งแรก)
+// ═══════════════════════════════════════════════════════════
+function checkWelcome(){
+  if(!localStorage.getItem('portfolio_welcomed')){
+    document.getElementById('welcomeOverlay').classList.add('show');
+  } else {
+    document.getElementById('welcomeOverlay').style.display='none';
+  }
+}
+function dismissWelcome(){
+  localStorage.setItem('portfolio_welcomed','1');
+  document.getElementById('welcomeOverlay').classList.remove('show');
+  document.getElementById('welcomeOverlay').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESET ALL DATA
+// ═══════════════════════════════════════════════════════════
+function resetAllData(){
+  if(!confirm('⚠️ ล้างข้อมูลทั้งหมด?\n\n- พอร์ตสินทรัพย์ทั้งหมด\n- ประวัติการซื้อ/ขาย\n- API Keys\n\nข้อมูลจะหายถาวร!\nแนะนำ Export backup ก่อน')) return;
+  if(!confirm('ยืนยันอีกครั้ง — ล้างข้อมูลทั้งหมดจริงๆ?')) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem('finnhub_api_key');
+  localStorage.removeItem('alphavantage_api_key');
+  localStorage.removeItem('portfolio_welcomed');
+  showToast('🗑 ล้างข้อมูลทั้งหมดแล้ว — กำลัง reload...');
+  setTimeout(()=>location.reload(), 1000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+checkWelcome();
+updateHeaderKeyStatus();
+renderTable();
+renderSellLog();
+fetchAll();
+startThStockTimer();
+</script>
+</body>
+</html>
