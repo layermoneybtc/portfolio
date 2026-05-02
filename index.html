@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 Portfolio Live v0.01</title>
+<title>📊 Portfolio Live v0.02</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 :root{
@@ -158,7 +158,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
   <div class="modal" style="width:min(500px,94vw);max-height:90vh;overflow-y:auto">
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:32px;margin-bottom:8px">📊</div>
-      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.01</span></h3>
+      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.02</span></h3>
       <div style="font-size:12px;color:var(--text3)">ระบบติดตามพอร์ตการลงทุน · ราคา Live อัตโนมัติ</div>
     </div>
 
@@ -170,6 +170,39 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
       🥇 ทองคำ — 3 แบบ (แท่ง 99.99% / 96.5% / รูปพรรณ)<br>
       📊 Donut Chart + P&L Chart + Target Alert<br>
       📤 Export / Import JSON · CSV
+    </div>
+
+    <!-- CHANGELOG -->
+    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:14px;font-size:11px;line-height:1.9;color:var(--text2);max-height:180px;overflow-y:auto">
+      <div style="font-weight:600;color:var(--blue);margin-bottom:8px">📋 ประวัติอัปเดต</div>
+
+      <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--btc)">v0.02 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        ✅ Price Cache — ตลาดปิดยังแสดงราคาล่าสุดอัตโนมัติ ไม่ต้องกรอกเอง<br>
+        ✅ Welcome Screen สำหรับผู้ใช้ใหม่<br>
+        ✅ ปุ่ม Reset Data ล้างข้อมูลเริ่มใหม่ได้<br>
+        ✅ ข้อมูลเริ่มต้นว่าง — แต่ละคนกรอกสินทรัพย์เอง<br>
+        ✅ Privacy Notice ชัดเจน
+      </div>
+
+      <div style="border-left:2px solid var(--up);padding-left:10px;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--up)">v0.01</div>
+        ✅ Crypto Live — Bitkub API ทุก 60 วินาที<br>
+        ✅ หุ้น US Live — Finnhub API (แปลง USD×THB อัตโนมัติ)<br>
+        ✅ หุ้นไทย Live — Alpha Vantage API (auto interval)<br>
+        ✅ ทองคำ 3 แบบ — 99.99% / 96.5% / รูปพรรณ + ค่ากำเหน็จ<br>
+        ✅ USD/THB — ExchangeRate API ฟรีไม่ต้อง key<br>
+        ✅ Donut Chart สัดส่วนพอร์ต<br>
+        ✅ P&L Chart แบบ Grouped + Drill-down<br>
+        ✅ Buy / Sell Modal + Realized PnL<br>
+        ✅ Target Price Alert (TP/SL)<br>
+        ✅ localStorage auto-save แยกบุคคล<br>
+        ✅ Export JSON / CSV / Import<br>
+        ✅ ⚙️ API Key Settings ปลอดภัย (ไม่ hardcode)<br>
+        ✅ Multi-exchange (🇺🇸 US / 🇹🇭 TH / ✏️ Manual)<br>
+        ✅ Emoji Picker สินทรัพย์อื่นๆ<br>
+        ✅ ทศนิยมทุกช่องกรอกตัวเลข
+      </div>
     </div>
 
     <div style="background:#f8717112;border:1px solid #f8717130;border-radius:10px;padding:14px;margin-bottom:14px;font-size:11px;line-height:1.8;color:var(--text2)">
@@ -533,7 +566,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
 <!-- ── BODY ── -->
 <div class="hdr">
   <div>
-    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.01</span></div>
+    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.02</span></div>
     <div class="status-row">
       <div class="dot" id="liveDot"></div>
       <div class="ts" id="lastUp">กำลังเชื่อมต่อ...</div>
@@ -624,7 +657,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
 </div>
 
 <footer>
-  Portfolio Live v0.01 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
+  Portfolio Live v0.02 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
   Crypto: Bitkub · หุ้น US+ทอง: Finnhub · หุ้นไทย: Alpha Vantage · USD/THB: ExchangeRate API
 </footer>
 
@@ -689,6 +722,46 @@ let prices={...FALLBACK};
 let stockPrices={}; // USD prices from Finnhub
 let usdThb=36.0;    // USD/THB fallback rate
 let tradeTarget=null, addType='crypto', targetTarget=null, currentTab='buy';
+
+// ── PRICE CACHE — เก็บราคาล่าสุดไว้ใช้ตอนตลาดปิด ──
+const PRICE_CACHE_KEY = 'portfolio_price_cache';
+function loadPriceCache(){
+  try{
+    const raw=localStorage.getItem(PRICE_CACHE_KEY);
+    if(!raw) return {};
+    return JSON.parse(raw);
+  }catch(e){ return {}; }
+}
+function savePriceCache(){
+  try{
+    const cache={
+      stockPrices:{...stockPrices},
+      goldPricePerBaht,
+      usdThb,
+      cryptoPrices:{...prices},
+      savedAt:new Date().toISOString()
+    };
+    localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify(cache));
+  }catch(e){}
+}
+// โหลด cache ตอนเริ่ม
+const priceCache=loadPriceCache();
+if(priceCache.stockPrices) stockPrices={...priceCache.stockPrices};
+if(priceCache.usdThb) usdThb=priceCache.usdThb;
+if(priceCache.goldPricePerBaht) goldPricePerBaht=priceCache.goldPricePerBaht;
+if(priceCache.cryptoPrices){
+  Object.keys(priceCache.cryptoPrices).forEach(k=>{
+    if(priceCache.cryptoPrices[k]>0) prices[k]=priceCache.cryptoPrices[k];
+  });
+}
+// อัปเดต stock prices จาก cache กลับเข้า STOCKS
+Object.keys(stockPrices).forEach(sym=>{
+  const idx=STOCKS.findIndex(s=>s.sym===sym);
+  if(idx>=0 && stockPrices[sym]>0){
+    if(STOCKS[idx].exchange==='TH') STOCKS[idx].price=parseFloat(stockPrices[sym].toFixed(2));
+    else STOCKS[idx].price=parseFloat((stockPrices[sym]*usdThb).toFixed(4));
+  }
+});
 
 // ── FINNHUB CONFIG — อ่านจาก localStorage ──
 function getFinnhubKey(){ return localStorage.getItem('finnhub_api_key')||''; }
@@ -1124,6 +1197,11 @@ async function fetchStockPrices(){
     statusEl.textContent=`📈 ${parts.join(' · ')} · ${new Date().toLocaleTimeString('th-TH')}`;
     statusEl.style.color=failCount===0?'var(--up)':'var(--warn)';
   }
+  // ถ้าดึงไม่ได้แต่มี cache — ใช้ cache แสดงราคาเดิม
+  if(failCount>0 && Object.keys(stockPrices).length>0 && statusEl){
+    const cacheTime=priceCache.savedAt?new Date(priceCache.savedAt).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    statusEl.textContent+=` · ใช้ราคาล่าสุด ${cacheTime}`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1157,10 +1235,27 @@ async function fetchGoldPrice(){
       const hint=document.getElementById('gdCurHint');
       if(hint) hint.textContent=`ราคา Spot 99.99%: ฿${Math.round(goldPricePerBaht).toLocaleString('th-TH')}/บาท`;
     } else {
-      if(statusEl){statusEl.textContent='🥇 ทอง: GLD ดึงไม่ได้ (ตลาดปิด/key หมด)';statusEl.style.color='var(--text3)';}
+      // ตลาดปิด — ใช้ราคาจาก cache ถ้ามี
+      if(goldPricePerBaht>0 && statusEl){
+        const p9999=Math.round(goldPricePerBaht).toLocaleString('th-TH');
+        const p965 =Math.round(goldPricePerBaht*0.965).toLocaleString('th-TH');
+        const cacheTime=priceCache.savedAt?new Date(priceCache.savedAt).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+        statusEl.textContent=`🥇 ทอง: ใช้ราคาล่าสุด · 99.99%=฿${p9999} · 96.5%=฿${p965} · ${cacheTime}`;
+        statusEl.style.color='var(--warn)';
+      } else if(statusEl){
+        statusEl.textContent='🥇 ทอง: ตลาดปิด · ยังไม่มีราคาใน cache';
+        statusEl.style.color='var(--text3)';
+      }
     }
   }catch(e){
-    if(statusEl){statusEl.textContent='🥇 ทอง: ดึงราคาไม่ได้ — '+e.message;statusEl.style.color='var(--text3)';}
+    // error — ใช้ cache ถ้ามี
+    if(goldPricePerBaht>0 && statusEl){
+      statusEl.textContent='🥇 ทอง: ใช้ราคาล่าสุดจาก cache';
+      statusEl.style.color='var(--warn)';
+    } else if(statusEl){
+      statusEl.textContent='🥇 ทอง: ดึงราคาไม่ได้ — '+e.message;
+      statusEl.style.color='var(--text3)';
+    }
   }
 }
 
@@ -1303,6 +1398,7 @@ async function fetchAll(){
 
   checkTargets();
   renderTable(); renderSellLog();
+  savePriceCache(); // บันทึกราคาล่าสุดไว้ใช้ตอนตลาดปิด
   btn.disabled=false;btn.textContent='⟳ รีเฟรช';
   startCountdown();
 }
@@ -1637,6 +1733,8 @@ function renderTable(){
       priceDisplay=`<span style="color:var(--warn)">${liveP.toFixed(2)}</span><span style="color:var(--text3);font-size:10px"> USD</span>`;
     } else if(ex==='TH' && liveP){
       priceDisplay=`<span style="color:var(--up)">${liveP.toFixed(2)}</span><span style="color:var(--text3);font-size:10px"> ฿</span>`;
+    } else if(s.price > 0){
+      priceDisplay=`<span style="color:var(--text2)">${s.price.toFixed(2)}</span><span style="color:var(--text3);font-size:10px"> ${ex==='US'?'USD':'฿'} <span style="font-size:8px">cache</span></span>`;
     } else {
       priceDisplay=`<input class="inp-e" type="number" value="${s.price}" step="0.01" onchange="STOCKS[${i}].price=parseFloat(this.value)||0;saveData();renderTable()"/>`;
     }
