@@ -131,44 +131,52 @@ body.privacy .kpi-v,
 body.privacy .kpi-s,
 body.privacy .badge,
 body.privacy .inp-e,
-body.privacy .nw-row td:nth-child(2),
-body.privacy .nw-row td:nth-child(3),
-body.privacy .tot-row td,
-body.privacy .leg-val,
-body.privacy .sell-log td:nth-child(3),
-body.privacy .sell-log td:nth-child(4),
-body.privacy .sell-log td:nth-child(5),
-body.privacy .sell-log td:nth-child(6),
-body.privacy .sell-log td:nth-child(7),
-body.privacy #pnlSummary,
-body.privacy #donutCanvas,
-body.privacy .donut-legend,
-body.privacy #pnlCanvas,
-body.privacy .preview{
+body.privacy .preview,
+body.privacy #pnlSummary{
   filter:blur(8px)!important;
   user-select:none;
   pointer-events:none;
   transition:filter .3s;
 }
-body.privacy td:nth-child(3),
-body.privacy td:nth-child(4),
-body.privacy td:nth-child(5),
-body.privacy td:nth-child(6),
-body.privacy td:nth-child(7),
-body.privacy td:nth-child(8),
-body.privacy td:nth-child(9),
-body.privacy td:nth-child(10){
+/* Charts — blur ทั้ง container */
+body.privacy .donut-wrap,
+body.privacy #pnlCanvas{
+  filter:blur(10px)!important;
+  user-select:none;
+  pointer-events:none;
+}
+/* Table — blur ตัวเลขทุกช่อง ยกเว้นชื่อ */
+body.privacy tbody tr:not(.sec-row) td:nth-child(3),
+body.privacy tbody tr:not(.sec-row) td:nth-child(4),
+body.privacy tbody tr:not(.sec-row) td:nth-child(5),
+body.privacy tbody tr:not(.sec-row) td:nth-child(6),
+body.privacy tbody tr:not(.sec-row) td:nth-child(7),
+body.privacy tbody tr:not(.sec-row) td:nth-child(8),
+body.privacy tbody tr:not(.sec-row) td:nth-child(9),
+body.privacy tbody tr:not(.sec-row) td:nth-child(10){
   filter:blur(8px)!important;
   user-select:none;
   pointer-events:none;
 }
-body.privacy .sec-row td,
-body.privacy td:nth-child(1),
-body.privacy td:nth-child(2),
-body.privacy td:nth-child(11),
-body.privacy td:nth-child(12){
+/* Net Worth row */
+body.privacy .nw-row td{
+  filter:blur(8px)!important;
+  user-select:none;
+  pointer-events:none;
+}
+body.privacy .nw-row td:first-child{
   filter:none!important;
   pointer-events:auto;
+}
+/* Sell log */
+body.privacy .sell-log td:nth-child(3),
+body.privacy .sell-log td:nth-child(4),
+body.privacy .sell-log td:nth-child(5),
+body.privacy .sell-log td:nth-child(6),
+body.privacy .sell-log td:nth-child(7){
+  filter:blur(8px)!important;
+  user-select:none;
+  pointer-events:none;
 }
 
 /* ══════════════════════════════════════════════
