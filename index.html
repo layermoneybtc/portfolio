@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 Portfolio Live v0.03</title>
+<title>📊 Portfolio Live v0.04</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 :root{
@@ -126,6 +126,154 @@ tr:hover td{background:var(--bg3)}
 
 footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margin-top:8px}
 
+/* ══════════════════════════════════════════════
+   RESPONSIVE — Mobile Card View + Tablet + Desktop
+   ══════════════════════════════════════════════ */
+
+/* ── MOBILE CARD VIEW (<= 768px) ── */
+@media(max-width:768px){
+  body{padding:12px 8px}
+
+  /* Header */
+  .hdr{flex-direction:column;gap:8px}
+  .hdr-btns{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  .hdr-btns .btn,.hdr-btns .btn-out{font-size:10px;padding:6px 4px;text-align:center;width:100%}
+  .hdr-btns .btn-out[title="ตั้งค่า API Key"]{grid-column:1}
+  .logo{font-size:16px}
+  .status-row{gap:4px}
+  .ts{font-size:10px}
+
+  /* KPI */
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .kpi{padding:10px 10px}
+  .kpi-v{font-size:15px}
+  .kpi-l{font-size:9px}
+  .kpi-s{font-size:10px}
+
+  /* Charts */
+  .chart-grid{grid-template-columns:1fr;gap:8px}
+  .chart-card{padding:10px}
+
+  /* Table → Card View */
+  .tbl-wrap{border:none;border-radius:0;overflow:visible}
+  table, thead, tbody, th, td, tr{display:block;width:100%}
+  thead{display:none}
+  
+  /* Section row */
+  .sec-row{margin-top:12px}
+  .sec-row td{display:flex!important;justify-content:space-between;align-items:center;padding:8px 10px!important;border-radius:10px;background:var(--bg3)!important;border:1px solid var(--border)!important;margin-bottom:4px}
+
+  /* Normal rows → card */
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row){
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:8px;
+    padding:12px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px 12px;
+    position:relative;
+  }
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row):hover{background:var(--bg3)}
+  
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td{
+    border:none!important;
+    padding:2px 0!important;
+    text-align:left!important;
+    font-size:12px;
+  }
+  /* icon + name = full width top */
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(1){
+    grid-column:1;grid-row:1;
+  }
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(2){
+    grid-column:1/-1;grid-row:1;
+    font-size:13px;font-weight:600;
+    padding-left:28px!important;
+  }
+  /* Add labels before values on mobile */
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(1){display:none!important}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(3)::before{content:'ราคา: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(4)::before{content:'จำนวน: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(5)::before{content:'ต้นทุน/หน่วย: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(6)::before{content:'ทุนรวม: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(7)::before{content:'มูลค่า: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(8)::before{content:'หนี้: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(9)::before{content:'P&L: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(10)::before{content:'สัดส่วน: ';color:var(--text3);font-family:'IBM Plex Sans Thai',sans-serif;font-size:10px}
+  
+  /* Hide less important cols on mobile */
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(8){display:none!important}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(10){display:none!important}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(11){display:none!important}
+  
+  /* Action buttons = bottom right */
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td:nth-child(12){
+    grid-column:1/-1;
+    text-align:right!important;
+    padding-top:6px!important;
+    border-top:1px solid var(--border)!important;
+    margin-top:4px;
+  }
+
+  /* Total rows */
+  .tot-row td{font-size:11px!important;padding:6px 10px!important}
+  .tot-row{display:flex!important;flex-wrap:wrap;justify-content:space-between;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 12px!important;margin-bottom:4px}
+  .tot-row td{border:none!important;padding:2px 4px!important;flex-shrink:0}
+  
+  /* Net Worth row */
+  .nw-row{display:flex!important;flex-wrap:wrap;justify-content:space-between;align-items:center;border-radius:12px;padding:12px!important;margin-top:8px}
+  .nw-row td{border:none!important;padding:2px 4px!important}
+  .nw-row td:first-child{width:100%;font-size:12px!important;margin-bottom:4px}
+  .nw-row td:nth-child(2){font-size:20px!important}
+
+  /* Input fields wider on mobile */
+  .inp-e{width:80px;font-size:12px;padding:5px 4px}
+  
+  /* Modals */
+  .modal{width:96vw!important;padding:16px;max-height:90vh;overflow-y:auto}
+  .mrow{grid-template-columns:1fr!important;gap:8px}
+  .minp{font-size:14px;padding:10px}
+  .mbtn-row{flex-direction:column}
+  .mbtn-ok,.mbtn-c,.mbtn-sell{width:100%;padding:12px;font-size:14px}
+  
+  /* Sell log */
+  .sell-log table{font-size:10px}
+  .sell-log th,.sell-log td{padding:4px 6px!important}
+  
+  /* PnL filter buttons */
+  .pnl-filter{font-size:9px;padding:4px 6px}
+  
+  /* Save toast */
+  .save-toast{bottom:10px;right:10px;left:10px;text-align:center}
+}
+
+/* ── SMALL MOBILE (<= 400px) ── */
+@media(max-width:400px){
+  body{padding:8px 4px}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:4px}
+  .kpi-v{font-size:13px}
+  .logo{font-size:14px}
+  .hdr-btns{grid-template-columns:repeat(3,1fr);gap:3px}
+  .hdr-btns .btn,.hdr-btns .btn-out{font-size:9px;padding:5px 2px}
+  .inp-e{width:70px;font-size:11px}
+  tbody tr:not(.sec-row):not(.tot-row):not(.nw-row) td{font-size:11px}
+}
+
+/* ── TABLET (769px - 1024px) ── */
+@media(min-width:769px) and (max-width:1024px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .chart-grid{grid-template-columns:200px 1fr}
+  .inp-e{width:90px}
+}
+
+/* ── LARGE DESKTOP (>= 1400px) ── */
+@media(min-width:1400px){
+  body{max-width:1400px;margin:0 auto}
+  .kpi-grid{grid-template-columns:repeat(7,1fr)}
+}
+
 /* ── SETTINGS MODAL ── */
 .settings-section{margin-bottom:18px}
 .settings-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
@@ -158,7 +306,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
   <div class="modal" style="width:min(500px,94vw);max-height:90vh;overflow-y:auto">
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:32px;margin-bottom:8px">📊</div>
-      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.03</span></h3>
+      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.04</span></h3>
       <div style="font-size:12px;color:var(--text3)">ระบบติดตามพอร์ตการลงทุน · ราคา Live อัตโนมัติ</div>
     </div>
 
@@ -177,7 +325,15 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
       <div style="font-weight:600;color:var(--blue);margin-bottom:8px">📋 ประวัติอัปเดต</div>
 
       <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
-        <div style="font-weight:700;color:var(--btc)">v0.03 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        <div style="font-weight:700;color:var(--btc)">v0.04 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        ✅ Responsive ทุกอุปกรณ์ — มือถือ, แท็บเล็ต, จอใหญ่<br>
+        ✅ Mobile Card View — ตารางเปลี่ยนเป็นการ์ดบนจอเล็ก<br>
+        ✅ ปุ่มและ Modal ปรับขนาดตามหน้าจอ<br>
+        ✅ Input ใหญ่ขึ้นบนมือถือ กดง่าย
+      </div>
+
+      <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--btc)">v0.03</div>
         ✅ แก้ สินทรัพย์อื่นๆ ไม่ถูกคำนวณรวมใน Net Worth<br>
         ✅ บังคับแปลงตัวเลขทุกช่อง ป้องกัน bug จาก Import
       </div>
@@ -572,7 +728,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
 <!-- ── BODY ── -->
 <div class="hdr">
   <div>
-    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.03</span></div>
+    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.04</span></div>
     <div class="status-row">
       <div class="dot" id="liveDot"></div>
       <div class="ts" id="lastUp">กำลังเชื่อมต่อ...</div>
@@ -663,7 +819,7 @@ footer{font-size:10px;color:var(--text3);text-align:center;line-height:1.8;margi
 </div>
 
 <footer>
-  Portfolio Live v0.03 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
+  Portfolio Live v0.04 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
   Crypto: Bitkub · หุ้น US+ทอง: Finnhub · หุ้นไทย: Alpha Vantage · USD/THB: ExchangeRate API
 </footer>
 
