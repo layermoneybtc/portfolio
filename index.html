@@ -132,60 +132,14 @@ body.privacy .kpi-s,
 body.privacy .badge,
 body.privacy .inp-e,
 body.privacy .preview,
-body.privacy #pnlSummary{
+body.privacy #pnlSummary,
+body.privacy .donut-wrap,
+body.privacy #pnlCanvas,
+body.privacy .pv{
   filter:blur(8px)!important;
   user-select:none;
   pointer-events:none;
   transition:filter .3s;
-}
-/* Charts — blur ทั้ง container */
-body.privacy .donut-wrap,
-body.privacy #pnlCanvas{
-  filter:blur(10px)!important;
-  user-select:none;
-  pointer-events:none;
-}
-/* Table — blur ตัวเลขทุกแถวปกติ */
-body.privacy tbody tr:not(.sec-row) td:nth-child(3),
-body.privacy tbody tr:not(.sec-row) td:nth-child(4),
-body.privacy tbody tr:not(.sec-row) td:nth-child(5),
-body.privacy tbody tr:not(.sec-row) td:nth-child(6),
-body.privacy tbody tr:not(.sec-row) td:nth-child(7),
-body.privacy tbody tr:not(.sec-row) td:nth-child(8),
-body.privacy tbody tr:not(.sec-row) td:nth-child(9),
-body.privacy tbody tr:not(.sec-row) td:nth-child(10){
-  filter:blur(8px)!important;
-  user-select:none;
-  pointer-events:none;
-}
-/* Tot rows — blur ยอดรวมทุกกลุ่ม */
-body.privacy .tot-row td:nth-child(n+2){
-  filter:blur(8px)!important;
-  user-select:none;
-  pointer-events:none;
-}
-/* Net Worth row — blur ทุก td ยกเว้นชื่อ */
-body.privacy .nw-row td{
-  filter:blur(8px)!important;
-  user-select:none;
-  pointer-events:none;
-}
-body.privacy .nw-row td:first-child{
-  filter:none!important;
-  pointer-events:auto;
-}
-body.privacy .nw-row td:last-child{
-  filter:blur(8px)!important;
-}
-/* Sell log */
-body.privacy .sell-log td:nth-child(3),
-body.privacy .sell-log td:nth-child(4),
-body.privacy .sell-log td:nth-child(5),
-body.privacy .sell-log td:nth-child(6),
-body.privacy .sell-log td:nth-child(7){
-  filter:blur(8px)!important;
-  user-select:none;
-  pointer-events:none;
 }
 
 /* ══════════════════════════════════════════════
@@ -2108,6 +2062,7 @@ function renderTable(){
 
   pnlAllItems = buildPnLItems();
   redrawPnLChart();
+  if(privacyMode) setTimeout(()=>applyPrivacy(),50);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2377,6 +2332,33 @@ function applyPrivacy(){
   document.body.classList.toggle('privacy', privacyMode);
   const btn=document.getElementById('privacyBtn');
   if(btn) btn.textContent=privacyMode?'🙈 ซ่อน':'👁 แสดง';
+  // เพิ่ม/ลบ class pv ให้ทุก td ที่มีตัวเลข
+  document.querySelectorAll('td').forEach(td=>{
+    const tr=td.parentElement;
+    if(!tr) return;
+    const isSec=tr.classList.contains('sec-row');
+    const isTot=tr.classList.contains('tot-row');
+    const isNw=tr.classList.contains('nw-row');
+    if(isSec) return; // section header ไม่ blur
+    if(isTot||isNw){
+      // blur ทุก td ที่มีตัวเลข (ไม่ใช่ label)
+      const text=td.textContent.trim();
+      const hasNumber=/[฿\d\+\-\.]/.test(text) && text.length>0 && !/^(รวม|สินทรัพย์|หนี้สิน|Net|💎|Asset)/.test(text);
+      td.classList.toggle('pv', privacyMode && hasNumber);
+    } else {
+      // แถวปกติ — blur td ที่ไม่ใช่ชื่อ (td 1,2) และไม่ใช่ปุ่ม (td สุดท้าย)
+      const idx=Array.from(tr.children).indexOf(td);
+      const totalCols=tr.children.length;
+      const isName=idx<=1;
+      const isAction=idx>=totalCols-2 && td.querySelector('button,.target-chip');
+      td.classList.toggle('pv', privacyMode && !isName && !isAction);
+    }
+  });
+  // blur sell log values
+  document.querySelectorAll('.sell-log td').forEach((td,i)=>{
+    const col=i%8; // 8 columns in sell log
+    td.classList.toggle('pv', privacyMode && col>=2 && col<=6);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
