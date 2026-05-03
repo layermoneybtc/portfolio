@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 Portfolio Live v0.05</title>
+<title>📊 Portfolio Live v0.06</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 :root{
@@ -321,7 +321,7 @@ body.privacy .pv{
   <div class="modal" style="width:min(500px,94vw);max-height:90vh;overflow-y:auto">
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:32px;margin-bottom:8px">📊</div>
-      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.05</span></h3>
+      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.06</span></h3>
       <div style="font-size:12px;color:var(--text3)">ระบบติดตามพอร์ตการลงทุน · ราคา Live อัตโนมัติ</div>
     </div>
 
@@ -340,7 +340,13 @@ body.privacy .pv{
       <div style="font-weight:600;color:var(--blue);margin-bottom:8px">📋 ประวัติอัปเดต</div>
 
       <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
-        <div style="font-weight:700;color:var(--btc)">v0.05 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        <div style="font-weight:700;color:var(--btc)">v0.06 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        ✅ แก้ Bitkub API — ใช้ V3 ticker format ถูกต้อง ราคา Crypto อัปเดต Live<br>
+        ✅ Fallback เป็น price cache ถ้าดึงไม่ได้
+      </div>
+
+      <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--btc)">v0.05</div>
         ✅ Privacy Mode 👁/🙈 — กดปุ่มซ่อนตัวเลขทั้งหมด (blur)<br>
         ✅ เหมาะสำหรับโชว์พอร์ตโดยไม่เปิดเผยยอดเงิน<br>
         ✅ จำสถานะไว้ — ปิดเปิดหน้าก็ยังซ่อนอยู่
@@ -750,7 +756,7 @@ body.privacy .pv{
 <!-- ── BODY ── -->
 <div class="hdr">
   <div>
-    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.05</span></div>
+    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.06</span></div>
     <div class="status-row">
       <div class="dot" id="liveDot"></div>
       <div class="ts" id="lastUp">กำลังเชื่อมต่อ...</div>
@@ -842,7 +848,7 @@ body.privacy .pv{
 </div>
 
 <footer>
-  Portfolio Live v0.05 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
+  Portfolio Live v0.06 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
   Crypto: Bitkub · หุ้น US+ทอง: Finnhub · หุ้นไทย: Alpha Vantage · USD/THB: ExchangeRate API
 </footer>
 
@@ -1554,29 +1560,51 @@ async function fetchAll(){
   document.getElementById('errBox').style.display='none';
   let ok=false;
   try{
-    const syms=CRYPTO.filter(c=>c.bk).map(c=>c.bk).join(',');
-    const res=await fetch(`https://api.bitkub.com/api/v3/market/ticker?sym=${syms}`,{cache:'no-cache'});
+    // Bitkub V3 ticker — ดึงทั้งหมด ไม่ต้องส่ง sym
+    const res=await fetch('https://api.bitkub.com/api/v3/market/ticker',{cache:'no-cache'});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
-    if(Array.isArray(data.result)&&data.result.length>0){
-      data.result.forEach(item=>{if(item.sym&&item.last)prices[item.sym]=parseFloat(item.last);});
-      ok=true;
-    }else throw new Error('empty');
+    // V3 response: { "THB_BTC": { "last": 3000000, ... }, "THB_ETH": { ... } }
+    if(data && typeof data==='object'){
+      let found=0;
+      CRYPTO.forEach(c=>{
+        if(c.bk && data[c.bk] && data[c.bk].last){
+          prices[c.bk]=parseFloat(data[c.bk].last);
+          found++;
+        }
+      });
+      if(found>0) ok=true;
+      else throw new Error('no matching symbols');
+    } else throw new Error('unexpected format');
   }catch(e1){
+    // Fallback: ลอง V1 (เผื่อ V3 ยังไม่ทำงาน)
     try{
       const res2=await fetch('https://api.bitkub.com/api/market/ticker',{cache:'no-cache'});
       const d2=await res2.json();
-      if(d2.result){Object.keys(d2.result).forEach(k=>{if(k in FALLBACK)prices[k]=parseFloat(d2.result[k].last)||FALLBACK[k];});ok=true;}
+      if(d2){
+        CRYPTO.forEach(c=>{
+          if(c.bk && d2[c.bk] && d2[c.bk].last){
+            prices[c.bk]=parseFloat(d2[c.bk].last);
+          }
+        });
+        ok=true;
+      }
     }catch(e2){
-      prices={...FALLBACK};
+      // ใช้ price cache ถ้ามี
+      if(priceCache.cryptoPrices){
+        Object.keys(priceCache.cryptoPrices).forEach(k=>{
+          if(priceCache.cryptoPrices[k]>0) prices[k]=priceCache.cryptoPrices[k];
+        });
+        ok=true;
+      }
       const eb=document.getElementById('errBox');
       eb.style.display='block';
-      eb.textContent='⚠️ ดึงราคา Bitkub ไม่ได้ — ใช้ราคาอ้างอิง 25 เม.ย. 2026 (เปิดไฟล์ใน Chrome จะได้ราคาจริง)';
+      eb.textContent='⚠️ ดึงราคา Bitkub ไม่ได้ — ใช้ราคาล่าสุดจาก cache';
     }
   }
   const dot=document.getElementById('liveDot'),lu=document.getElementById('lastUp');
   if(ok){dot.classList.add('live');lu.textContent='Bitkub Live · '+new Date().toLocaleTimeString('th-TH');}
-  else{dot.classList.remove('live');lu.textContent='ราคาอ้างอิง 25 เม.ย. 2026';}
+  else{dot.classList.remove('live');lu.textContent='ราคาอ้างอิง (cache)';}
   // ── Finnhub US Stocks + Gold ──
   await fetchUsdThb();
   await Promise.all([fetchStockPrices(), fetchGoldPrice()]);
