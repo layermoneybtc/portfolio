@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 Portfolio Live v0.06</title>
+<title>📊 Portfolio Live v0.07</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 :root{
@@ -321,7 +321,7 @@ body.privacy .pv{
   <div class="modal" style="width:min(500px,94vw);max-height:90vh;overflow-y:auto">
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:32px;margin-bottom:8px">📊</div>
-      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.06</span></h3>
+      <h3 style="font-size:20px;margin-bottom:4px">PORTFOLIO LIVE <span style="color:var(--btc)">v0.07</span></h3>
       <div style="font-size:12px;color:var(--text3)">ระบบติดตามพอร์ตการลงทุน · ราคา Live อัตโนมัติ</div>
     </div>
 
@@ -340,7 +340,14 @@ body.privacy .pv{
       <div style="font-weight:600;color:var(--blue);margin-bottom:8px">📋 ประวัติอัปเดต</div>
 
       <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
-        <div style="font-weight:700;color:var(--btc)">v0.06 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        <div style="font-weight:700;color:var(--btc)">v0.07 <span style="font-weight:400;color:var(--text3)">— ล่าสุด</span></div>
+        ✅ แก้หุ้นไทย Alpha Vantage — ลอง .BK และ .BKK อัตโนมัติ<br>
+        ✅ จำ symbol ที่ใช้ได้จริง ไม่ต้องลองซ้ำ<br>
+        ✅ แสดง error ชัดเจนขึ้น (ตัวไหนหาไม่เจอ)
+      </div>
+
+      <div style="border-left:2px solid var(--btc);padding-left:10px;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--btc)">v0.06</div>
         ✅ แก้ Bitkub API — ใช้ V3 ticker format ถูกต้อง ราคา Crypto อัปเดต Live<br>
         ✅ Fallback เป็น price cache ถ้าดึงไม่ได้
       </div>
@@ -756,7 +763,7 @@ body.privacy .pv{
 <!-- ── BODY ── -->
 <div class="hdr">
   <div>
-    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.06</span></div>
+    <div class="logo">PORT<span>FOLIO</span> LIVE <span class="logo-v">v0.07</span></div>
     <div class="status-row">
       <div class="dot" id="liveDot"></div>
       <div class="ts" id="lastUp">กำลังเชื่อมต่อ...</div>
@@ -848,7 +855,7 @@ body.privacy .pv{
 </div>
 
 <footer>
-  Portfolio Live v0.06 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
+  Portfolio Live v0.07 · ข้อมูลเก็บใน browser คุณเท่านั้น · ไม่ใช่คำแนะนำการลงทุน<br>
   Crypto: Bitkub · หุ้น US+ทอง: Finnhub · หุ้นไทย: Alpha Vantage · USD/THB: ExchangeRate API
 </footer>
 
@@ -2249,31 +2256,44 @@ async function fetchThaiStockPrices(){
   let okCount=0, failCount=0, rateLimited=false, lastErr='';
   for(let si=0; si<thStocks.length; si++){
     const s=thStocks[si];
-    const sym=s.finnhubSym||(s.sym+'.BK');
-    try{
-      const url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}&apikey=${AV_KEY}`;
-      const r=await fetch(url);
-      const d=await r.json();
-      if(d['Global Quote']&&d['Global Quote']['05. price']){
-        const p=parseFloat(d['Global Quote']['05. price']);
-        if(p>0){
-          const idx=STOCKS.findIndex(x=>x.sym===s.sym&&x.exchange==='TH');
-          if(idx>=0){
-            stockPrices[s.sym]=p;
-            STOCKS[idx].price=parseFloat(p.toFixed(2));
+    // ลอง .BK ก่อน ถ้าไม่ได้ลอง .BKK
+    const symVariants=[
+      s.finnhubSym||(s.sym+'.BK'),
+      s.sym+'.BKK'
+    ];
+    let found=false;
+    for(const sym of symVariants){
+      if(found) break;
+      try{
+        const url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}&apikey=${AV_KEY}`;
+        const r=await fetch(url);
+        const text=await r.text();
+        // เช็ค rate limit ก่อน parse JSON
+        if(text.includes('Note') || text.includes('Information') || text.includes('rate limit') || text.includes('API call frequency')){
+          rateLimited=true;
+          if(statusEl){statusEl.textContent=`🇹🇭 หุ้นไทย: เกิน rate limit (25 req/วัน) — รอพรุ่งนี้`;statusEl.style.color='var(--warn)';}
+          break;
+        }
+        const d=JSON.parse(text);
+        if(d['Global Quote']&&d['Global Quote']['05. price']){
+          const p=parseFloat(d['Global Quote']['05. price']);
+          if(p>0){
+            const idx=STOCKS.findIndex(x=>x.sym===s.sym&&x.exchange==='TH');
+            if(idx>=0){
+              stockPrices[s.sym]=p;
+              STOCKS[idx].price=parseFloat(p.toFixed(2));
+              // บันทึก symbol ที่ใช้ได้จริง
+              STOCKS[idx].finnhubSym=sym;
+            }
+            okCount++;
+            found=true;
           }
-          okCount++;
-        } else failCount++;
-      } else if(d['Note']||d['Information']){
-        // rate limit hit
-        rateLimited=true;
-        if(statusEl){statusEl.textContent=`🇹🇭 หุ้นไทย: เกิน rate limit (25 req/วัน) — รอพรุ่งนี้ หรือ refresh มือ`;statusEl.style.color='var(--warn)';}
-        break;
-      } else {
-        failCount++;
-      }
-    }catch(e){ failCount++; lastErr=e.message; }
-    // delay 2s ระหว่าง request เพื่อไม่ให้โดน throttle
+        }
+      }catch(e){ lastErr=e.message; }
+    }
+    if(rateLimited) break;
+    if(!found) { failCount++; lastErr=`${s.sym} ไม่พบใน Alpha Vantage`; }
+    // delay 2s ระหว่าง request
     if(si<thStocks.length-1) await new Promise(r=>setTimeout(r,2000));
   }
   avLastFetch=Date.now();
@@ -2284,10 +2304,10 @@ async function fetchThaiStockPrices(){
       statusEl.textContent=`🇹🇭 หุ้นไทย Live ×${thStocks.length} · ${new Date().toLocaleTimeString('th-TH')} · ถัดไป ~${nextRefresh}`;
       statusEl.style.color='var(--up)';
     } else if(okCount>0){
-      statusEl.textContent=`🇹🇭 หุ้นไทย: ดึงได้ ${okCount}/${thStocks.length} · ถัดไป ~${nextRefresh}`;
+      statusEl.textContent=`🇹🇭 หุ้นไทย: ดึงได้ ${okCount}/${thStocks.length} · ${lastErr} · ถัดไป ~${nextRefresh}`;
       statusEl.style.color='var(--warn)';
     } else {
-      statusEl.textContent=`🇹🇭 หุ้นไทย: ดึงไม่ได้ — ${lastErr||'response ว่าง'} — ลอง ⚙️ ทดสอบ Key`;
+      statusEl.textContent=`🇹🇭 หุ้นไทย: ดึงไม่ได้ — ${lastErr} — ลอง ⚙️ ทดสอบ Key`;
       statusEl.style.color='var(--dn)';
     }
   }
